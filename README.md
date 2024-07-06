@@ -1,5 +1,5 @@
 # bigtype
-scalable concurrent high performance big Go data type without engaging with GC 
+scalable concurrent high performance big Go data type without engaging GC 
 
 bigtype provides big type simply for Golang. Go-lang supports arrays/slices and maps by defaults. They are work fine and can be enough often but not always. Maximum length of Go-lang arrays is 2GB. Then we can not define big array more than 2GB. on the other side Go maps are exteremly fast but uses a lot of pointers and when we have to define a big map, Golang standard maps are not good choice because use a lot of memory and finally application may be crashed. Using an appropriate Cache is typical solution to solve the problem. But as I checked all availiable cache solution finally using a type of standard go map. Then they can not resolve the problem but only can reduce the impact or improve the result a little.  
 bigtype main idea is fundamentaly diffrent. Every thing is implemented on array without using of Go standard maps. Therefore bigtype never engaging with GC while uses minimum required memory. 
