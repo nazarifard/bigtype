@@ -1,0 +1,23 @@
+--- FAIL: TestA_FsMap_Uint64 (0.01s)
+panic: index:4670725394792448 is out of range. MaxSize of BigArray:*basic.array[github.com/nazarifard/bigtype/internal/basic.Node] is 5572 [recovered]
+	panic: index:4670725394792448 is out of range. MaxSize of BigArray:*basic.array[github.com/nazarifard/bigtype/internal/basic.Node] is 5572
+
+goroutine 6 [running]:
+testing.tRunner.func1.2({0x5d25c0, 0xc000026020})
+	/usr/local/go/src/testing/testing.go:1631 +0x24a
+testing.tRunner.func1()
+	/usr/local/go/src/testing/testing.go:1634 +0x377
+panic({0x5d25c0?, 0xc000026020?})
+	/usr/local/go/src/runtime/panic.go:770 +0x132
+github.com/nazarifard/bigtype/internal/basic.(*array[...]).Get(0x665ca0, 0x0)
+	/home/bnf/github/bigtype/internal/basic/array.go:284 +0x394
+github.com/nazarifard/bigtype/internal/basic.(*Disk).Set(0xc000027040, 0x78e9a0?, 0xe9d38ef3424b65af)
+	/home/bnf/github/bigtype/internal/basic/path.go:210 +0x1d4
+github.com/nazarifard/bigtype/internal/basic.TestA_FsMap_Uint64(0xc000134b60?)
+	/home/bnf/github/bigtype/internal/basic/fs_test.go:17 +0x5a
+testing.tRunner(0xc000134b60, 0x626c58)
+	/usr/local/go/src/testing/testing.go:1689 +0xfb
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1742 +0x390
+exit status 2
+FAIL	github.com/nazarifard/bigtype/internal/basic	0.016s

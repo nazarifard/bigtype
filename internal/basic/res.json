@@ -1,0 +1,122 @@
+basic.Node{
+  Type: true,
+  Name: 0,
+  Children: []int{
+    1,
+    9,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 182,
+  Children: []int{
+    2,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 54,
+  Children: []int{
+    3,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 169,
+  Children: []int{
+    4,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 194,
+  Children: []int{
+    5,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 122,
+  Children: []int{
+    6,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 135,
+  Children: []int{
+    7,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 155,
+  Children: []int{
+    8,
+  },
+}
+basic.Node{
+  Type: false,
+  Name: 37,
+  Children: []int{
+    0,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 64,
+  Children: []int{
+    10,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 13,
+  Children: []int{
+    11,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 132,
+  Children: []int{
+    12,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 176,
+  Children: []int{
+    13,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 233,
+  Children: []int{
+    14,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 166,
+  Children: []int{
+    15,
+  },
+}
+basic.Node{
+  Type: true,
+  Name: 226,
+  Children: []int{
+    16,
+  },
+}
+basic.Node{
+  Type: false,
+  Name: 83,
+  Children: []int{
+    1,
+  },
+}
+PASS
+ok  	github.com/nazarifard/bigtype/internal/basic	0.006s
