@@ -1,19 +1,21 @@
-package bigtype
+package cache
 
 import (
 	"errors"
 	"unsafe"
+
+	"github.com/nazarifard/bigtype/sync"
 )
 
 var errKeyNotFound = errors.New("key not found")
 
 type Cache struct {
-	memory Map[string, []byte]
+	memory sync.Map[string, []byte]
 }
 
 func NewCache() *Cache {
 	return &Cache{
-		memory: NewMap[string, []byte](),
+		memory: sync.NewMap[string, []byte](),
 	}
 }
 

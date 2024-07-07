@@ -1,4 +1,4 @@
-package bigtype
+package sync
 
 import (
 	"fmt"

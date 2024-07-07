@@ -1,5 +1,5 @@
 // Developer: bahador.nazarifard@gmail.com
-package bigtype
+package sync
 
 import (
 	"math/rand"
