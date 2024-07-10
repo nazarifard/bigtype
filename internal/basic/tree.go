@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/nazarifard/bigtype/internal/hash"
-	"github.com/nazarifard/bigtype/internal/options"
 )
 
 // func XorHash[K kNumber](key K) K {
@@ -33,11 +32,11 @@ func newTree[K kNumber, V any](ops ...any) *bigTree[K, V] {
 		fmt.Println("Error: bigtype.bigTree does not support string keys. use bigtype.Map")
 		os.Exit(1)
 	}
-	option := options.ParseTreeOptions[K, V](ops...)
+	options := ParsArrayOptions[V](ops...)
 	return &bigTree[K, V]{
-		indexTable: NewFixedArray[node[K]](option.HistSize+1, nil, true),
-		keys:       NewArray[K](option.HistSize+1, nil, true),
-		values:     NewArray[V](option.HistSize+1, option.VMarshal, true),
+		indexTable: NewFixedArray[node[K]](options.Size+1, true),
+		keys:       NewFixedArray[K](options.Size+1, true),
+		values:     NewArray[V](options.Size+1, options.marshal, true),
 		hasher:     hash.NewHash[K](),
 		root:       0,
 		free:       1,
@@ -142,4 +141,11 @@ func (t *bigTree[K, V]) Range(f func(key K, value V) bool) {
 		key := t.keys.Get(i)
 		next = f(key, value)
 	}
+}
+
+func (t *bigTree[K, V]) Delete(key K) {
+	//TODO index should be deleted from tree also
+	index := t.insertIterative(t.root, K(t.hasher.Hash(key)))
+	t.values.Delete(int(index))
+	t.keys.Delete(int(index))
 }

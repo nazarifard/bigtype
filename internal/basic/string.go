@@ -3,13 +3,10 @@ package basic
 import "unsafe"
 
 func s2b(s string) []byte {
-	p := unsafe.StringData(s)
-	b := unsafe.Slice(p, len(s))
-	return b
+	return unsafe.Slice(unsafe.StringData(s), len(s))
 }
 
-// func b2s(b []byte) string {
-// 	p := unsafe.SliceData(b)
-// 	return unsafe.String(p, len(b))
-// 	//return unsafe.String(&b[0], len(b))
-// }
+func b2s(bs []byte) string {
+	return unsafe.String(&bs[0], len(bs))
+	//return u.String(u.SliceData(bs), len(bs))
+}

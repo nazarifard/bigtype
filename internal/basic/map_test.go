@@ -6,27 +6,32 @@ import (
 	"os"
 	"testing"
 	"time"
+	"unsafe"
 )
 
 func Benchmark_Map_StringString(b *testing.B) {
-	bigmap := NewMap[string, string]() //(0, MTapeString, MTapeUint64)
+	bigmap := NewMap[string, string]()
 	b.ResetTimer()
+	var n int
 	for i := 0; i < b.N; i++ {
-		s := fmt.Sprint(i % 2_000_000)
-		bigmap.Set(s, s) //fmt.Sprintf("%0.8d", k))
+		n = i % 2_000_000
+		pb := (*byte)(unsafe.Pointer(&n))
+		s := unsafe.String(pb, 8)
+		bigmap.Set(s, s)
 	}
-	// fmt.Println("bigmap.Len(): ", bigmap.Len())
 }
 
 func Benchmark_Map_String(b *testing.B) {
-	bigmap := NewMap[string, uint64](0, MTapeString, MTapeUint64)
+	bigmap := NewMap[string, uint64]()
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		bigmap.Set(fmt.Sprint(i%2_000_000), uint64(i)) //fmt.Sprintf("%0.8d", k))
+	var n int
+	for i := range b.N {
+		n = i % 2_000_000
+		pb := (*byte)(unsafe.Pointer(&n))
+		s := unsafe.String(pb, 8)
+		bigmap.Set(s, uint64(i))
 	}
-	// fmt.Println("bigmap.Len(): ", bigmap.Len())
 }
-
 func TestBigMap(t *testing.T) {
 	const SIZE = 10_000
 	bigmap := NewMap[string, string]() //(0, MTapeString, MTapeUint64)
@@ -64,7 +69,7 @@ func TestBigMap(t *testing.T) {
 
 func TestBigMapUint64(t *testing.T) {
 	const SIZE = 10_000
-	bigmap := NewMap[uint64, uint64](0, MTapeUint64, MTapeUint64)
+	bigmap := NewMap[uint64, uint64]()
 
 	start := time.Now()
 	for range uint64(SIZE) {
@@ -100,11 +105,8 @@ func TestMapPrint(t *testing.T) {
 	m.Set("002", 2)
 	m.Set("003", 3)
 	m.Set("002", -2)
-	//m.print()
 	m.Range(func(key string, value int) bool {
 		fmt.Println("key:", key, "value:", value, ", ")
 		return true
 	})
-
-	//}
 }

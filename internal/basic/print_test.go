@@ -9,5 +9,6 @@ func TestTreeInOrder(t *testing.T) {
 	tree.Set(2, 200)
 	tree.Set(1, 100)
 	tree.Set(3, 300)
+	tree.Set(2, 222)
 	tree.inOrder(tree.root)
 }

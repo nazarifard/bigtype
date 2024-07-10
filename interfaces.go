@@ -7,6 +7,7 @@ type Array[V any] interface {
 	Get(index int) V
 	Len() int
 	Update(index int, updateFn func(old V) (new V))
+	Delete(index int)
 }
 
 type Updatable[K comparable, V any] interface {
@@ -20,4 +21,5 @@ type Map[K comparable, V any] interface {
 	Get(key K) (value V, ok bool)
 	SetMany(items map[K]V)
 	Range(f func(Key K, Value V) bool)
+	Delete(key K)
 }

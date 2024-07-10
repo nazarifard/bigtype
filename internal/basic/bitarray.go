@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/nazarifard/bigtype/internal/bucket"
-	"github.com/nazarifard/bigtype/internal/options"
 	"github.com/nazarifard/bigtype/log"
 )
 
@@ -16,11 +15,16 @@ type BitArray struct {
 
 func NewBitArray(ops ...any) Array[bool] {
 	ba := new(BitArray)
-	option := options.ParseArrayOptions[bool](ops...)
-	ba.expand(option.Size)
-	ba.unexpandable = !option.Expandable ////root is reserved in tree use case
+	options := ParsArrayOptions[bool](ops...)
+	ba.expand(options.Size)
+	ba.unexpandable = !options.expandable ////root is reserved in tree use case
 	//ba.z8 = byte(option.Size % 8)
 	return ba
+}
+
+// BitArray doesn't support UnsafePtr
+func (ba *BitArray) UnsafePtr(index int) *bool {
+	return nil
 }
 
 func (ba *BitArray) Get(index int) (flag bool) {
@@ -83,4 +87,8 @@ func (ba *BitArray) expand(size int) {
 
 func (ba *BitArray) Cap() int {
 	return len(ba.buckets) * bucket.BucketSize * 8
+}
+
+func (ba *BitArray) Delete(index int) {
+	ba.Set(index, false)
 }

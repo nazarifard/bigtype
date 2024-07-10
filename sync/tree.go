@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/nazarifard/bigtype/internal/basic"
-	"github.com/nazarifard/bigtype/internal/options"
 )
 
 const nSubTrees = 512
@@ -22,11 +21,12 @@ type bigTree[K kNumber, V any] struct {
 }
 
 func newTree[K kNumber, V any](ops ...any) *bigTree[K, V] {
-	option := options.ParseTreeOptions[K, V](ops...)
+	options := basic.ParsArrayOptions[V](ops...)
 	var t bigTree[K, V]
-	hintSize := (option.HistSize + nSubTrees - 1) / nSubTrees
+	hintSize := (options.Size + nSubTrees - 1) / nSubTrees
+	options.WithSize(hintSize)
 	for i := range t.subTrees {
-		t.subTrees[i] = basic.NewSyncTree[K, V](hintSize, option.VMarshal)
+		t.subTrees[i] = basic.NewSyncTree[K, V](options)
 	}
 	t.mutexCh = &sync.RWMutex{}
 	return &t

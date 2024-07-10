@@ -41,3 +41,7 @@ func IsBytes(v any) bool {
 	return reflect.TypeOf(v).Kind() == reflect.Slice &&
 		reflect.TypeOf(v).Elem().Kind() == reflect.Uint8
 }
+
+func IsRequiredToMarshal(v any) bool {
+	return !IsBytes(v) && !IsString(v) && !IsFixedType(v)
+}

@@ -6,7 +6,6 @@ import (
 	"unsafe"
 
 	"github.com/nazarifard/bigtype/internal/bucket"
-	"github.com/nazarifard/bigtype/internal/options"
 	"github.com/nazarifard/bigtype/log"
 )
 
@@ -23,17 +22,18 @@ func (ba *BigFixedArray[V]) Cap() int {
 	return rows * columns
 }
 
-func NewFixedArray[V any](ops ...any) Array[V] {
+func NewFixedArray[V any](size int, extendable bool) Array[V] {
 	if !IsFixedType(*new(V)) {
 		panic(fmt.Errorf("type:%T is not fixed sized type. this type of bigarray doesn't support dynamic size arrays", *new(V)))
 	}
 	if reflect.ValueOf(*new(V)).Kind() == reflect.Bool {
-		return NewBitArray(ops...).(Array[V])
+		var options ArrayOptions[V]
+		options.WithSize(size).WithExtandable(extendable)
+		return NewBitArray(options).(Array[V])
 	}
 	var ba BigFixedArray[V]
-	option := options.ParseArrayOptions[V](ops...)
-	ba.expand(option.Size)
-	ba.unexpandable = !option.Expandable ////root is reserved in tree use case
+	ba.expand(size)
+	ba.unexpandable = !extendable ////root is reserved in tree use case
 	return &ba
 }
 
@@ -59,7 +59,7 @@ func (ba *BigFixedArray[V]) expand(size int) {
 	//usually last bucket has empty space
 	itemSize := int(unsafe.Sizeof(*new(V)))
 	requiredSpace := itemSize * (size - ba.Cap())
-	for requiredSpace > 0 {
+	for requiredSpace > -bucket.BucketSize {
 		columns := bucket.BucketSize / int(unsafe.Sizeof(*new(V)))
 		row := make([]V, columns)
 		ba.buckets = append(ba.buckets, row)
@@ -111,4 +111,13 @@ func (ba *BigFixedArray[V]) Get(index int) V {
 
 func (ba *BigFixedArray[V]) Update(index int, updateFn func(old V) (new V)) {
 	ba.Set(index, updateFn(ba.Get(index)))
+}
+
+func (ba *BigFixedArray[V]) Delete(index int) {
+	ba.Set(index, *new(V))
+}
+
+// BigFixedArray does not support UnsafePtr and does not need at all
+func (ba *BigFixedArray[V]) UnsafePtr(index int) *V {
+	return nil
 }

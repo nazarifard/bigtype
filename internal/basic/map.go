@@ -2,7 +2,6 @@ package basic
 
 import (
 	"github.com/nazarifard/bigtype/internal/hash"
-	"github.com/nazarifard/bigtype/internal/options"
 )
 
 type bigMap[K comparable, V any] struct {
@@ -12,21 +11,27 @@ type bigMap[K comparable, V any] struct {
 
 	collitionMap   map[K]V
 	kHash          hash.Hashable[K]
-	CheckCollition bool
+	checkCollition bool
 }
 
 func NewMap[K comparable, V any](ops ...any) Map[K, V] {
+	options := ParsMapOptions[K, V](ops...)
+	var vo ArrayOptions[V]
+	var ko ArrayOptions[K]
+	var ho ArrayOptions[int]
+	vo.WithSize(options.Size).WithExtandable(true).WithMarshal(options.marshal).WithCloneFn(options.cloneFn)
+	ko.WithSize(options.Size).WithExtandable(true)
+	ho.WithSize(options.Size).WithExtandable(true)
 	if isNumber[K]() {
-		return makeTree[K, V]()
+		return makeTree[K, V](vo)
 	}
-	option := options.ParseMapOptions[K, V](ops...)
 	return &bigMap[K, V]{
-		htree:          newTree[uint64, int](option.HintSize, nil, true), //TODO hint size
+		htree:          newTree[uint64, int](ho), //TODO hint size
 		collitionMap:   make(map[K]V),
-		kHash:          hash.NewHash[K](option.KMarshal),
-		keys:           NewArray[K](option.HintSize, option.KMarshal, true),
-		values:         NewArray[V](option.HintSize, option.VMarshal, true),
-		CheckCollition: option.CheckCollition,
+		kHash:          hash.NewHash[K](nil),
+		keys:           NewArray[K](ko),
+		values:         NewArray[V](vo),
+		checkCollition: options.checkCollition,
 	}
 }
 
@@ -37,7 +42,7 @@ func (m *bigMap[K, V]) Len() int {
 func (m *bigMap[K, V]) HUpdate(hash uint64, key K, updateFn func(old V) (new V)) {
 	index, ok := m.htree.Get(hash)
 	if ok { //update
-		if !m.CheckCollition {
+		if !m.checkCollition {
 			//m.keys.Set(index, key)
 			m.values.Update(index, updateFn)
 		} else {
@@ -64,14 +69,14 @@ func (m *bigMap[K, V]) Update(key K, updateFn func(old V) (new V)) {
 func (m *bigMap[K, V]) HSet(hash uint64, key K, value V) {
 	index, ok := m.htree.Get(hash)
 	if ok { //update
-		if !m.CheckCollition {
-			m.keys.Set(index, key)
-			m.values.Set(index, value)
+		if !m.checkCollition {
+			m.keys.Set(index+1, key)
+			m.values.Set(index+1, value)
 		} else {
-			oldKey := m.keys.Get(index)
+			oldKey := m.keys.Get(index + 1)
 			if oldKey == key { //just update
-				m.keys.Set(index, key)
-				m.values.Set(index, value)
+				m.keys.Set(index+1, key)
+				m.values.Set(index+1, value)
 			} else {
 				//real collicion
 				m.collitionMap[key] = value
@@ -86,7 +91,8 @@ func (m *bigMap[K, V]) HSet(hash uint64, key K, value V) {
 }
 
 func (m *bigMap[K, V]) Set(key K, value V) {
-	m.HSet(m.kHash.Hash(key), key, value)
+	h := m.kHash.Hash(key)
+	m.HSet(h, key, value)
 }
 
 func (m *bigMap[K, V]) HGet(hash uint64, key K) (value V, ok bool) {
@@ -94,7 +100,7 @@ func (m *bigMap[K, V]) HGet(hash uint64, key K) (value V, ok bool) {
 	if !ok {
 		return
 	}
-	if !m.CheckCollition {
+	if !m.checkCollition {
 		//m.keys.Set(index, key)
 		value = m.values.Get(index)
 		return
@@ -123,11 +129,20 @@ func (m *bigMap[K, V]) Range(f func(key K, value V) bool) {
 	for i := 1; next && i <= m.htree.Len(); i++ {
 		next = f(m.keys.Get(i), m.values.Get(i))
 	}
-	if m.CheckCollition {
+	if m.checkCollition {
 		for k, v := range m.collitionMap {
 			if next {
 				next = f(k, v)
 			}
 		}
+	}
+}
+
+func (m *bigMap[K, V]) Delete(key K) {
+	hash := m.kHash.Hash(key)
+	index, ok := m.htree.Get(hash)
+	if ok {
+		m.keys.Delete(index)
+		m.values.Delete(index)
 	}
 }

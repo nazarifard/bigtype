@@ -14,7 +14,7 @@ const fixed_array_max_size int = 7 * 1000 * 1000
 //var ba Array[Sample]
 
 func setupFixedArray() *BigFixedArray[Sample] {
-	ba := NewFixedArray[Sample](fixed_array_max_size)
+	ba := NewFixedArray[Sample](fixed_array_max_size, false)
 	for n := 0; n < fixed_array_max_size; n++ {
 		//n := i % uint32(fixed_array_max_size)
 		sample.Num = uint32(n)
@@ -34,7 +34,7 @@ func setupFixedArray() *BigFixedArray[Sample] {
 // }
 
 func BenchmarkInsert(b *testing.B) {
-	ba := NewFixedArray[Sample](fixed_array_max_size)
+	ba := NewFixedArray[Sample](fixed_array_max_size, false)
 	for i := 0; i < b.N; i++ {
 		n := i % fixed_array_max_size
 		sample.Num = uint32(n)

@@ -28,7 +28,7 @@ func Benchmark_Set_Array_Uint64(b *testing.B) {
 }
 
 func Benchmark_Set_MArray_Uint64(b *testing.B) {
-	var ba_mArray_uint64 = NewArray[uint64](MTapeUint64)
+	var ba_mArray_uint64 = NewArray[uint64]()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ba_mArray_uint64.Set(i%g_array_size, uint64(i))
@@ -42,7 +42,7 @@ func Benchmark_Set_BigArray_String(b *testing.B) {
 	}
 }
 func Benchmark_Array_Set_MBig_Slice_String(b *testing.B) {
-	ba := NewArray[string](MTapeString)
+	ba := NewArray[string]()
 	for i := 0; i < b.N; i++ {
 		ba.Set(i%g_array_size, "abcdefghjklmnbop") //fmt.Sprintf("%0.8d", i))
 	}
@@ -82,46 +82,39 @@ func Benchmark_Array_Set_MBig_Slice_String(b *testing.B) {
 //		}
 //	}
 
-func BenchmarkCacheGet(b *testing.B) {
+// func BenchmarkCacheGet(b *testing.B) {
+// 	const items = 1<<16
+// 	ba := NewArray[[]byte](items)
+// 	v := []byte("xyza")
+// 	for i := 0; i < items; i++ {
+// 		ba.Set(i, v)
+// 	}
+// 	b.ReportAllocs()
+// 	b.SetBytes(items)
+// 	b.RunParallel(func(pb *testing.PB) {
+// 		for pb.Next() {
+// 			for i := 0; i < items; i++ {
+// 				_ = ba.Get(i)
+// 			}
+// 		}
+// 	})
+// }
 
-	x := NewArray[int]()
-	_ = x
-
-	const items = 1 << 16
-	ba := NewArray[[]byte](items)
-	v := []byte("xyza")
-	for i := 0; i < items; i++ {
-		ba.Set(i, v)
-	}
-	fmt.Println("_____________________________________________________")
-	b.ReportAllocs()
-	b.SetBytes(items)
-	b.RunParallel(func(pb *testing.PB) {
-		//k := 0 //[]byte("\x00\x00\x00\x00")
-		for pb.Next() {
-			for i := 0; i < items; i++ {
-				_ = ba.Get(i)
-			}
-		}
-	})
-}
-
-func BenchmarkCacheSet(b *testing.B) {
-	const items = 1 << 16
-	ba := NewArray[[]byte](items)
-	fmt.Println("_____________________________________________________")
-	b.ReportAllocs()
-	b.SetBytes(items)
-	b.RunParallel(func(pb *testing.PB) {
-		//k := 0 //[]byte("\x00\x00\x00\x00")
-		v := []byte("xyza")
-		for pb.Next() {
-			for i := 0; i < items; i++ {
-				ba.Set(i, v)
-			}
-		}
-	})
-}
+// func BenchmarkCacheSet(b *testing.B) {
+// 	const items = 1<<16 - 1
+// 	ba := NewArray[[]byte](items)
+// 	b.ReportAllocs()
+// 	b.SetBytes(items)
+// 	b.RunParallel(func(pb *testing.PB) {
+// 		//k := 0 //[]byte("\x00\x00\x00\x00")
+// 		v := []byte("xyza")
+// 		for pb.Next() {
+// 			for i := 0; i < items; i++ {
+// 				ba.Set(i, v)
+// 			}
+// 		}
+// 	})
+// }
 
 func TestPerformance_BigArray_String(t *testing.T) {
 	const size = g_array_size/2 - 1

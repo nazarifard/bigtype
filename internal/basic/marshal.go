@@ -29,7 +29,7 @@ func (t MarshalTap[V, VTape]) Decode(bs []byte) (v V, n int, err error) {
 	return
 }
 
-// func NewTap[V any, VTape fastape.Tape[V]]() marshal.Interface[V] {
+// func NewTap[V any, VTape fastape.Tape[V]]() fastape.Tap[V] {
 // 	return MarshalTap[V, VTape]{}
 // }
 

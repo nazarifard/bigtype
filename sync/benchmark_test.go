@@ -61,7 +61,6 @@ func Benchmark_ArrayString_Get(b *testing.B) {
 
 func Benchmark_ArrayString_Set(b *testing.B) {
 	alphabet := []byte("1234567890abcdef")
-	//repo := arrayStringSetup()
 	repo := NewArray[[]byte](maxSize)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -178,16 +177,13 @@ func mapStringStringSetup() Map[string, []byte] {
 	for id := range cpu {
 		go func(c int) {
 			defer wg.Done()
-			for i := range maxSize / cpu {
-				//i := id*cpu +i //rand.Int31n(int32(hintSize))
-				//s := fmt.Sprint(i)
+			for range maxSize / cpu {
+				n := rand.Int31n(int32(maxSize))
 				le := 1 + rand.Int31n(3)
 
-				n := c*cpu + i
 				p := (*byte)(unsafe.Pointer(&n))
 				nStr := unsafe.String(p, unsafe.Sizeof(n))
 				repo.Set(nStr, alphabet[:le])
-				_ = i
 			}
 		}(id)
 	}

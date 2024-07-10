@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/nazarifard/bigtype/internal/basic"
-	"github.com/nazarifard/bigtype/internal/options"
 )
 
 const nSubArrays = 512
@@ -32,11 +31,14 @@ func (a *array[V]) Len() int {
 }
 
 func NewArray[V any](ops ...any) Array[V] {
-	option := options.ParseArrayOptions[V](ops...)
-	a := new(array[V]) //must use new because has non-copiable objects
+	option := basic.ParsArrayOptions[V](ops...)
+	subSize := (option.Size + nSubArrays - 1) / nSubArrays
+	option.WithSize(subSize)
+
+	//must use new because has non-copiable objects
+	a := new(array[V])
 	for i := range a.subArrays {
-		subSize := (option.Size + nSubArrays - 1) / nSubArrays
-		a.subArrays[i] = newSyncArray[V](subSize, option.VMarshal, option.Expandable)
+		a.subArrays[i] = newSyncArray[V](option)
 	}
 	return a
 }

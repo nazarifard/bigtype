@@ -5,7 +5,6 @@ import (
 
 	"github.com/nazarifard/bigtype/internal/utils"
 	marshal "github.com/nazarifard/marshaltap"
-	"github.com/nazarifard/marshaltap/tap/stdlib/gob"
 )
 
 const defaultSeed uint64 = 0x7d5b016bcbfebb4c
@@ -87,7 +86,7 @@ func NewHash[K any](m ...marshal.Interface[K]) Hashable[K] {
 		}
 		return any(h).(Hashable[K])
 	} else {
-		var tap marshal.Interface[K] = gob.GobTap[K]{}
+		var tap marshal.Interface[K] = nil //gob.GobTap[K]{}
 		h := &HashM[K, marshal.Interface[K]]{
 			seed:      defaultSeed,
 			Marshaler: tap,

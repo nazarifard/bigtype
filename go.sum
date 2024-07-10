@@ -58,8 +58,12 @@ github.com/mus-format/mus-go v0.0.0-20230426134740-6572513fca3d h1:/FqtbOoougvCb
 github.com/mus-format/mus-go v0.0.0-20230426134740-6572513fca3d/go.mod h1:zdDnTFri6XqdQVRTE/HuGnmn+/3c3a0ODNUsw+9SXS8=
 github.com/nazarifard/fastape v0.0.0-20240701091219-24b4965645ac h1:R7r6gf/KxgRv+7Frt3M1RvkDsNUT+8ESxR3gxACDjk8=
 github.com/nazarifard/fastape v0.0.0-20240701091219-24b4965645ac/go.mod h1:F54tpGg4uMgsYNUqD07iNENNGcS2GJobr+td/iZ5Xm4=
+github.com/nazarifard/fastape v0.0.0-20240709164519-8c17d21a54a1 h1:BSbdIKDtvh5qV2cgaL+I8DjusXrvs6ekRgVA8xYGcEA=
+github.com/nazarifard/fastape v0.0.0-20240709164519-8c17d21a54a1/go.mod h1:5O2L3OHQPOh5oK+603x/UHSsNUdJ5739nMM9RquIxFo=
 github.com/nazarifard/marshaltap v0.0.0-20240617060120-398e958f6f21 h1:5nCTwcf3sDA/eNy0LgRx5MEHTQ5341Egm031WJW2D90=
 github.com/nazarifard/marshaltap v0.0.0-20240617060120-398e958f6f21/go.mod h1:PyHCkLoYCMCWGFitzIjFV4EUXk8LtcAyz7eDAfUfgLY=
+github.com/nazarifard/marshaltap v0.0.0-20240709170557-1458d96ad01e h1:sxEZdFuHrcp7s7cm2DJtySRf2X4NIaCLP5gX4ylHaMg=
+github.com/nazarifard/marshaltap v0.0.0-20240709170557-1458d96ad01e/go.mod h1:LTduU63pkhC0pTE5uyrs3dYBGrYCqlX0wdVaWqP7Xx8=
 github.com/nazarifard/syncpool v0.0.0-20240613052038-6a4f565d052d h1:Qj/4Odmainro/UKPAWtxwfZJ3hhTddj9oE/4SgulPAk=
 github.com/nazarifard/syncpool v0.0.0-20240613052038-6a4f565d052d/go.mod h1:6jsXD5qqHuYLJE+iVr7ICvzFD5pm7P1un7V5QmJi9o8=
 github.com/philhofer/fwd v1.1.2 h1:bnDivRJ1EWPjUIRXV5KfORO897HTbpFAQddBdE8t7Gw=
