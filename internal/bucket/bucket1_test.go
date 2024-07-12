@@ -147,7 +147,7 @@ import (
 func CheckAddr(b *Bucket1, at addr.AddressTable) {
 	for index := range at.Len {
 		offset := at.Get(index).Offset()
-		if offset != NILOFFSET && string(b.Read(offset)) != fmt.Sprint(index) {
+		if offset != NILOFFSET && string(b.Get(offset)) != fmt.Sprint(index) {
 			panic("check read")
 		}
 	}
@@ -161,8 +161,9 @@ func Test_Bucket1(t *testing.T) {
 	b := NewBucket1(0)
 	var index int
 	for index = range 5000 {
-		offset := b.Write(index, []byte(fmt.Sprint(index)))
+		space, offset := b.Request(index, len([]byte(fmt.Sprint(index))))
 		addrTable.Set(index, addr.NewAddrItem(0, offset))
+		copy(space, []byte(fmt.Sprint(index))) //write
 	}
 	if err := b.CheckUp(addrTable); err != nil {
 		panic(err)
@@ -198,8 +199,9 @@ func Test_Bucket1(t *testing.T) {
 		if addrTable.Get(index).Offset() != NILOFFSET {
 			b.Delete(addrTable.Get(index).Offset())
 		}
-		offset := b.Write(index, []byte(fmt.Sprint(index)))
+		space, offset := b.Request(index, len([]byte(fmt.Sprint(index))))
 		addrTable.Set(index, addr.NewAddrItem(0, offset))
+		copy(space, []byte(fmt.Sprint(index))) //write
 	}
 	if err := b.CheckUp(addrTable); err != nil {
 		panic(err)
@@ -223,12 +225,13 @@ func Test_Insert1(t *testing.T) {
 			//bucket.Checkup()
 			m[index] = 0
 		}
-		offset = bucket.Write(int(index), s[:Len])
+		space, offset := bucket.Request(int(index), len(s[:Len]))
 		//	bucket.Checkup()
 		if offset == NILOFFSET {
 			bucket = NewBucket1(0)
 			//		bucket.Checkup()
-			offset = bucket.Write(int(index), s[:Len])
+			copy(space, s[:Len])
+			//offset = bucket.Write(int(index), s[:Len])
 			//		bucket.Checkup()
 		}
 		if offset != NILOFFSET {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/nazarifard/bigtype/internal/basic"
 	"github.com/nazarifard/bigtype/internal/hash"
+	"github.com/nazarifard/bigtype/options"
 )
 
 const nSubMaps = 512
@@ -23,13 +24,15 @@ type bigMap[K comparable, V any] struct {
 }
 
 func NewMap[K comparable, V any](ops ...any) Map[K, V] {
+	mo := basic.ParsMapOptions[K, V](ops...)
 	if isNumber[K]() {
-		return makeTree[K, V](ops...)
+		var to options.TreeOptions[K, V]
+		to.WithMarshal(mo.Marshal()).WithSize(mo.Size())
+		return makeTree[K, V](to)
 	}
-	option := basic.ParsMapOptions[K, V](ops...)
 	var newOps []any
 	if len(ops) > 0 {
-		hintSize := (option.Size + nSubMaps - 1) / nSubMaps
+		hintSize := (mo.Size() + nSubMaps - 1) / nSubMaps
 		newOps = append(newOps, hintSize)
 		if len(ops) > 1 {
 			newOps = append(newOps, ops[1:])

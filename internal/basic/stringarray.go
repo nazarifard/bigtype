@@ -1,25 +1,20 @@
 package basic
 
-import "strings"
-
 type StringArray struct {
 	*BytesArray
 }
 
-func (sa *StringArray) UnsafePtr(index int) *string {
-	pbs := sa.BytesArray.UnsafePtr(index)
-	if pbs == nil {
-		return nil
-	}
-	return Ptr(b2s(*pbs))
-}
+// func (sa *StringArray) UnsafeGet(index int) *string {
+// 	pbs := sa.BytesArray.UnsafeGet(index)
+// 	if pbs == nil {
+// 		return nil
+// 	}
+// 	return Ptr(b2s(*pbs))
+// }
 
+// unsafe-mode; for later use must be cloned
 func (sa *StringArray) Get(index int) string {
-	pStr := sa.UnsafePtr(index)
-	if pStr == nil {
-		return ""
-	}
-	return strings.Clone(*pStr)
+	return b2s(sa.UnsafePtr(index))
 }
 
 func (sa *StringArray) Set(index int, value string) {

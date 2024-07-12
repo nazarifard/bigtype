@@ -90,7 +90,7 @@ func (b *Bucket2) Write(index int, data []byte) (offset uint16) {
 	return offset
 }
 
-func (b *Bucket2) Read(offset uint16) (data []byte) {
+func (b *Bucket2) Get(offset uint16) (data []byte) {
 	//bucket.Mutex.Lock()
 	if offset == NILOFFSET {
 		panic(fmt.Errorf("Bucket Select Offset Invalid"))
@@ -268,7 +268,7 @@ func (b *Bucket2) Defrag(addr map[int64]uint16) {
 
 func (b *Bucket2) CheckAddr(addr map[int64]uint16) {
 	for index, offset := range addr {
-		if offset != NILOFFSET && string(b.Read(offset)) != fmt.Sprint(index) {
+		if offset != NILOFFSET && string(b.Get(offset)) != fmt.Sprint(index) {
 			panic("check read")
 		}
 	}

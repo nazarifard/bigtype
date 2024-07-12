@@ -32,7 +32,7 @@ func (a *array[V]) Len() int {
 
 func NewArray[V any](ops ...any) Array[V] {
 	option := basic.ParsArrayOptions[V](ops...)
-	subSize := (option.Size + nSubArrays - 1) / nSubArrays
+	subSize := (option.Size() + nSubArrays - 1) / nSubArrays
 	option.WithSize(subSize)
 
 	//must use new because has non-copiable objects

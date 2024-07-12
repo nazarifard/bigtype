@@ -6,11 +6,8 @@ import (
 	"reflect"
 
 	"github.com/nazarifard/bigtype/internal/hash"
+	"github.com/nazarifard/bigtype/options"
 )
-
-// func XorHash[K kNumber](key K) K {
-// 	return K(uint64(key) ^ 0x7d5b016bcbfebb4c)
-// }
 
 type node[H kNumber] struct {
 	hkey  H
@@ -32,11 +29,15 @@ func newTree[K kNumber, V any](ops ...any) *bigTree[K, V] {
 		fmt.Println("Error: bigtype.bigTree does not support string keys. use bigtype.Map")
 		os.Exit(1)
 	}
-	options := ParsArrayOptions[V](ops...)
+	opt := ParsTreeOptions[K, V](ops...)
+
+	var vopt options.ArrayOptions[V]
+	vopt.WithSize(opt.Size() + 1).WithMarshal(opt.Marshal())
+
 	return &bigTree[K, V]{
-		indexTable: NewFixedArray[node[K]](options.Size+1, true),
-		keys:       NewFixedArray[K](options.Size+1, true),
-		values:     NewArray[V](options.Size+1, options.marshal, true),
+		indexTable: NewFixedArray[node[K]](opt.Size()+1, true),
+		keys:       NewFixedArray[K](opt.Size()+1, true),
+		values:     NewArray[V](vopt),
 		hasher:     hash.NewHash[K](),
 		root:       0,
 		free:       1,

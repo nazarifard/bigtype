@@ -41,10 +41,10 @@ $ MAXSIZE=10_000_000 go test -bench=. -run=^$ -benchtime=30000000x
 The report of memstat API shows the diffrence between bigtype and other similar solutions clearly.
 Bigtype never uses GC and or HeapAlloc
 ```sh
-$ MAXSIZE=10_000_000 go test -run=MemStat
-  Engine: BigtypeMap    Sys:    0MB, Alloc:    0MB, HeapAlloc:    0MB, NumGC: 0
-  Engine: StdMap        Sys:  649MB, Alloc:  580MB, HeapAlloc:  580MB, NumGC: 1
-  Engine: sync.Map      Sys:  888MB, Alloc: 1380MB, HeapAlloc: 1380MB, NumGC: 1
+$ MAXSIZE=10_000_000 go test -run=Memstats
+ Engine: BigMap          Sys:    0MB, Alloc:    0MB, HeapAlloc:    0MB, NumGC: 0
+ Engine: StdMap          Sys:  649MB, Alloc:  580MB, HeapAlloc:  580MB, NumGC: 1
+ Engine: sync.Map        Sys: 1372MB, Alloc: 1453MB, HeapAlloc: 1453MB, NumGC: 2
 ```
 
 # Internal modules 

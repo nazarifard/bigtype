@@ -6,7 +6,6 @@ type Array[V any] interface {
 	Len() int
 	Update(index int, updateFn func(old V) (new V))
 	Delete(index int)
-	UnsafePtr(index int) *V
 }
 
 type Updatable[K comparable, V any] interface {

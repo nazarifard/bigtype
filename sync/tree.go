@@ -21,9 +21,9 @@ type bigTree[K kNumber, V any] struct {
 }
 
 func newTree[K kNumber, V any](ops ...any) *bigTree[K, V] {
-	options := basic.ParsArrayOptions[V](ops...)
+	options := basic.ParsTreeOptions[K, V](ops...)
 	var t bigTree[K, V]
-	hintSize := (options.Size + nSubTrees - 1) / nSubTrees
+	hintSize := (options.Size() + nSubTrees - 1) / nSubTrees
 	options.WithSize(hintSize)
 	for i := range t.subTrees {
 		t.subTrees[i] = basic.NewSyncTree[K, V](options)

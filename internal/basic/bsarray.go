@@ -20,7 +20,7 @@ type BytesArray struct {
 func Ptr[V any](v V) *V { return &v }
 func Val[V any](p *V) V { return *p }
 
-func (ba *BytesArray) UnsafePtr(index int) *[]byte {
+func (ba *BytesArray) UnsafePtr(index int) []byte {
 	if index > ba.Len() {
 		panic(fmt.Errorf("index:%d is out of range. MaxSize of BigArray:%T is %d", index, ba, ba.Len()))
 	}
@@ -28,16 +28,14 @@ func (ba *BytesArray) UnsafePtr(index int) *[]byte {
 	if addrItem.Offset() == NILOFFSET {
 		return nil //here offset is not out of range
 	}
-	bs := ba.buckets[addrItem.BucketNum()].Read(addrItem.Offset())
-	return &bs
+	bs := ba.buckets[addrItem.BucketNum()].Get(addrItem.Offset())
+	return bs
 }
 
+// read-only unsafe-mode; for manipulation or reuse later must be cloned
 func (ba *BytesArray) Get(index int) []byte {
-	pbs := ba.UnsafePtr(index)
-	if pbs == nil {
-		return nil
-	}
-	return append([]byte(nil), *pbs...) //return copy of data
+	return ba.UnsafePtr(index)
+	//return append([]byte(nil), ba.UnsafePtr(index)...) //return copy of data
 }
 
 func (ba *BytesArray) Len() int {
@@ -80,20 +78,20 @@ func (ba *BytesArray) addNewBucket() {
 	}
 }
 
-func (ba *BytesArray) insert(key uint32, value []byte) addr.AddressItem {
+func (ba *BytesArray) insertRequest(key uint32, Len int) (space []byte, ad addr.AddressItem) {
 	if len(ba.buckets) == 0 {
 		ba.addNewBucket()
 		last := len(ba.buckets) - 1
-		offset := ba.buckets[last].Write(int(key), value)
-		return addr.NewAddrItem(uint32(last), offset)
+		space, offset := ba.buckets[last].Request(int(key), Len)
+		return space, addr.NewAddrItem(uint32(last), offset)
 	}
 	//first try last bucket
 	i := len(ba.buckets) - 1
 	for range len(ba.buckets) {
 		if ba.buckets[i] != nil {
-			offset := ba.buckets[i].Write(int(key), value)
+			space, offset := ba.buckets[i].Request(int(key), Len)
 			if offset != NILOFFSET {
-				return addr.NewAddrItem(uint32(i), offset)
+				return space, addr.NewAddrItem(uint32(i), offset)
 			}
 		}
 		//exclude last bucket; its checked firstly
@@ -104,22 +102,63 @@ func (ba *BytesArray) insert(key uint32, value []byte) addr.AddressItem {
 
 	//all buckets is nil or full
 	cellInfoSize := ba.buckets[0].InfoSize()
-	minimumRequired := cellInfoSize + len(value)
+	minimumRequired := cellInfoSize + Len
 	defragId := ba.DefragBucketCandidate(minimumRequired)
 	if 0 <= defragId && defragId < len(ba.buckets) {
 		ba.buckets[defragId].Defrag(&ba.addressTable)
-		offset := ba.buckets[defragId].Write(int(key), value)
+		space, offset := ba.buckets[defragId].Request(int(key), Len)
 		if offset == NILOFFSET {
 			panic("defrag problem")
 		}
-		return addr.NewAddrItem(uint32(defragId), offset)
+		return space, addr.NewAddrItem(uint32(defragId), offset)
 	} else {
 		ba.addNewBucket()
 		last := len(ba.buckets) - 1
-		offset := ba.buckets[last].Write(int(key), value)
-		return addr.NewAddrItem(uint32(last), offset)
+		space, offset := ba.buckets[last].Request(int(key), Len)
+		return space, addr.NewAddrItem(uint32(last), offset)
 	}
 }
+
+// func (ba *BytesArray) insert(key uint32, value []byte) addr.AddressItem {
+// 	if len(ba.buckets) == 0 {
+// 		ba.addNewBucket()
+// 		last := len(ba.buckets) - 1
+// 		offset := ba.buckets[last].Write(int(key), value)
+// 		return addr.NewAddrItem(uint32(last), offset)
+// 	}
+// 	//first try last bucket
+// 	i := len(ba.buckets) - 1
+// 	for range len(ba.buckets) {
+// 		if ba.buckets[i] != nil {
+// 			offset := ba.buckets[i].Write(int(key), value)
+// 			if offset != NILOFFSET {
+// 				return addr.NewAddrItem(uint32(i), offset)
+// 			}
+// 		}
+// 		//exclude last bucket; its checked firstly
+// 		if len(ba.buckets) > 1 {
+// 			i = int(rand.Int31n(int32(len(ba.buckets)) - 1)) //try for next bucket randomly
+// 		}
+// 	}
+
+// 	//all buckets is nil or full
+// 	cellInfoSize := ba.buckets[0].InfoSize()
+// 	minimumRequired := cellInfoSize + len(value)
+// 	defragId := ba.DefragBucketCandidate(minimumRequired)
+// 	if 0 <= defragId && defragId < len(ba.buckets) {
+// 		ba.buckets[defragId].Defrag(&ba.addressTable)
+// 		offset := ba.buckets[defragId].Write(int(key), value)
+// 		if offset == NILOFFSET {
+// 			panic("defrag problem")
+// 		}
+// 		return addr.NewAddrItem(uint32(defragId), offset)
+// 	} else {
+// 		ba.addNewBucket()
+// 		last := len(ba.buckets) - 1
+// 		offset := ba.buckets[last].Write(int(key), value)
+// 		return addr.NewAddrItem(uint32(last), offset)
+// 	}
+// }
 
 func (ba *BytesArray) Delete(index int) {
 	num := ba.addressTable.Get(index).BucketNum()
@@ -131,39 +170,43 @@ func (ba *BytesArray) Delete(index int) {
 	// }
 }
 
-// func (ba *BigArray[T]) checkUp() {
-// 	ba.operationCounter++
-// 	if ba.operationCounter == 1000*1000 {
-// 		runtime.GC()
-// 		ba.operationCounter = 0
-// 	}
-// }
-
-func (ba *BytesArray) Set(index int, value []byte) {
+//	func (ba *BigArray[T]) checkUp() {
+//		ba.operationCounter++
+//		if ba.operationCounter == 1000*1000 {
+//			runtime.GC()
+//			ba.operationCounter = 0
+//		}
+//	}
+func (ba *BytesArray) Request(index int, Len int) []byte {
 	if ba.addressTable.Expandable() && index >= ba.Len() {
 		ba.addressTable.Expand(int(index) + 1)
 	} else if index >= ba.Len() {
 		panic(fmt.Errorf("index:%d is out of range. MaxSize of BigArray:%T is %d", index, ba, ba.Len()))
 	}
-
 	addrItem := ba.addressTable.Get(index)
 	var oldValue []byte
 	if addrItem.Offset() != NILOFFSET {
-		oldValue = ba.buckets[addrItem.BucketNum()].Read(addrItem.Offset())
+		oldValue = ba.buckets[addrItem.BucketNum()].Get(addrItem.Offset())
 	}
 	switch len(oldValue) {
 	case 0: //insert new record
-		addrItem := ba.insert(uint32(index), value)
+		space, addrItem := ba.insertRequest(uint32(index), Len)
 		ba.addressTable.Set(index, addrItem)
+		return space
 
-	case len(value): //just replace
-		copy(oldValue, value)
+	case Len: //just replace
+		return oldValue //copy(oldValue, value)
 
 	default: //delete + insert
 		ba.Delete(index)
-		addrItem := ba.insert(uint32(index), value)
+		space, addrItem := ba.insertRequest(uint32(index), Len)
 		ba.addressTable.Set(index, addrItem)
+		return space
 	}
+}
+func (ba *BytesArray) Set(index int, value []byte) {
+	space := ba.Request(index, len(value))
+	copy(space, value)
 }
 
 func (ba *BytesArray) Update(index int, fn func(old []byte) (new []byte)) {
@@ -175,7 +218,7 @@ func (ba *BytesArray) Update(index int, fn func(old []byte) (new []byte)) {
 	if addrItem.Offset() == NILOFFSET {
 		ba.Set(index, fn(v))
 	}
-	bs := ba.buckets[addrItem.BucketNum()].Read(addrItem.Offset())
+	bs := ba.buckets[addrItem.BucketNum()].Get(addrItem.Offset())
 	ba.Set(index, fn(bs))
 }
 

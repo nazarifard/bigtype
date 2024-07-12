@@ -15,16 +15,10 @@ type BitArray struct {
 
 func NewBitArray(ops ...any) Array[bool] {
 	ba := new(BitArray)
-	options := ParsArrayOptions[bool](ops...)
-	ba.expand(options.Size)
-	ba.unexpandable = !options.expandable ////root is reserved in tree use case
-	//ba.z8 = byte(option.Size % 8)
+	opt := ParsArrayOptions[bool](ops...)
+	ba.expand(opt.Size())
+	ba.unexpandable = !opt.Expandable()
 	return ba
-}
-
-// BitArray doesn't support UnsafePtr
-func (ba *BitArray) UnsafePtr(index int) *bool {
-	return nil
 }
 
 func (ba *BitArray) Get(index int) (flag bool) {
@@ -33,7 +27,6 @@ func (ba *BitArray) Get(index int) (flag bool) {
 	}
 	row := index / 8 / bucket.BucketSize
 	column := (index / 8) % bucket.BucketSize
-	//i := index >> 3   //  index/8
 	r := index & 0x07 //  index%8
 	return ba.buckets[row][column]&(1<<r) != 0
 }
@@ -44,7 +37,6 @@ func (ba *BitArray) Set(index int, flag bool) {
 	}
 	row := index / 8 / bucket.BucketSize
 	column := index / 8 % bucket.BucketSize
-	//i := index >> 3   //index/8
 	r := index & 0x07 //index%8
 	if flag {
 		ba.buckets[row][column] |= (1 << r)

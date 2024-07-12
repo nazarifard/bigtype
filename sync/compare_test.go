@@ -41,7 +41,7 @@ func memstat(name string, Operation func(int)) {
 	fmt.Printf("Sys: %4dMB, ", (mem.Sys-mem0.Sys)/1024/1024)
 	fmt.Printf("Alloc: %4dMB, ", (mem.Alloc-mem0.Alloc)/1024/1024)
 	fmt.Printf("HeapAlloc: %4dMB, ", (mem.HeapAlloc-mem0.HeapAlloc)/1024/1024)
-	fmt.Printf("NumGC: %d, ", mem.NumGC-mem0.NumGC)
+	fmt.Printf("NumGC: %d\n", mem.NumGC-mem0.NumGC)
 }
 
 func Do(Operation func(int)) {

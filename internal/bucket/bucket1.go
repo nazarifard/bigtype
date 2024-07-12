@@ -83,12 +83,12 @@ func NewBucket1(id int) *Bucket1 {
 //	func (b *Bucket1) Set(key int, value []byte) (offset uint16) {
 //		return b.write(key, value)
 //	}
-func (b *Bucket1) Write(index int, data []byte) (offset uint16) {
+func (b *Bucket1) Request(index int, Len int) (space []byte, offset uint16) {
 	freeOffset := b.Offset(b.FreeCell)
 	freeLen := b.FreeCell.Head.Len
 
-	if HEAD_SIZE+len(data) > int(freeLen)-HEAD_SIZE {
-		return NILOFFSET
+	if HEAD_SIZE+Len > int(freeLen)-HEAD_SIZE {
+		return nil, NILOFFSET
 	}
 	if index > MaxValidIndex {
 		panic("index is too large more than 5 bytes.")
@@ -96,12 +96,12 @@ func (b *Bucket1) Write(index int, data []byte) (offset uint16) {
 
 	//b.FreeCell.Body = &b.cellar[freeOffset+uint16(HEAD_SIZE)] // : freeOffset+8-10+freeLen]
 
-	newCell, _ := b.MakeCell(freeOffset, uint16(len(data)))
+	newCell, _ := b.MakeCell(freeOffset, uint16(Len))
 	newCell.Head.SetIndex(index)
 	newCell.Head.Status = Live
-	bs := unsafe.Slice(newCell.Body, len(data))
-	copy(bs, data)
-	newCell.Head.Len = uint16(HEAD_SIZE + len(bs))
+	space = unsafe.Slice(newCell.Body, Len)
+	//copy(bs, data)
+	newCell.Head.Len = uint16(HEAD_SIZE + Len)
 	//newCell.Tail.Tlen = newCell.Head.Len
 	offset = freeOffset //b.Offset(newCell)
 
@@ -116,10 +116,41 @@ func (b *Bucket1) Write(index int, data []byte) (offset uint16) {
 	b.FreeCell.Head.Len = freeLen - newCell.Head.Len
 	//b.FreeCell.Tail.Tlen = b.FreeCell.Head.Len
 
-	return offset
+	return space, offset
 }
 
-func (b *Bucket1) Read(offset uint16) (data []byte) {
+// func (b *Bucket1) Write(index int, data []byte) (offset uint16) {
+// 	freeOffset := b.Offset(b.FreeCell)
+// 	freeLen := b.FreeCell.Head.Len
+// 	if HEAD_SIZE+len(data) > int(freeLen)-HEAD_SIZE {
+// 		return NILOFFSET
+// 	}
+// 	if index > MaxValidIndex {
+// 		panic("index is too large more than 5 bytes.")
+// 	}
+// 	//b.FreeCell.Body = &b.cellar[freeOffset+uint16(HEAD_SIZE)] // : freeOffset+8-10+freeLen]
+// 	newCell, _ := b.MakeCell(freeOffset, uint16(len(data)))
+// 	newCell.Head.SetIndex(index)
+// 	newCell.Head.Status = Live
+// 	bs := unsafe.Slice(newCell.Body, len(data))
+// 	copy(bs, data)
+// 	newCell.Head.Len = uint16(HEAD_SIZE + len(bs))
+// 	//newCell.Tail.Tlen = newCell.Head.Len
+// 	offset = freeOffset //b.Offset(newCell)
+// 	nextOffset := freeOffset + newCell.Head.Len
+// 	var ok bool
+// 	b.FreeCell, ok = b.MakeCell(nextOffset, freeLen-newCell.Head.Len-uint16(HEAD_SIZE))
+// 	if !ok {
+// 		fmt.Println("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+// 	}
+// 	b.FreeCell.Head.Status = Dead
+// 	b.FreeCell.Head.SetIndex(FreeCellIndex)
+// 	b.FreeCell.Head.Len = freeLen - newCell.Head.Len
+// 	//b.FreeCell.Tail.Tlen = b.FreeCell.Head.Len
+// 	return offset
+// }
+
+func (b *Bucket1) Get(offset uint16) (data []byte) {
 	//bucket.Mutex.Lock()
 	if offset == NILOFFSET {
 		panic(fmt.Errorf("Bucket1 Select Offset Invalid"))
@@ -133,7 +164,7 @@ func (b *Bucket1) Read(offset uint16) (data []byte) {
 	} else {
 		panic("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
 	}
-	return nil
+	//return nil
 	//return s2b(b2s(body)) //unsafeCloneBytes(body): must be cloned before return
 	//bucket.Mutex.UnLock()
 }

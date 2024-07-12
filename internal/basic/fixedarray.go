@@ -7,6 +7,7 @@ import (
 
 	"github.com/nazarifard/bigtype/internal/bucket"
 	"github.com/nazarifard/bigtype/log"
+	"github.com/nazarifard/bigtype/options"
 )
 
 type BigFixedArray[V any] struct {
@@ -27,9 +28,9 @@ func NewFixedArray[V any](size int, extendable bool) Array[V] {
 		panic(fmt.Errorf("type:%T is not fixed sized type. this type of bigarray doesn't support dynamic size arrays", *new(V)))
 	}
 	if reflect.ValueOf(*new(V)).Kind() == reflect.Bool {
-		var options ArrayOptions[V]
-		options.WithSize(size).WithExtandable(extendable)
-		return NewBitArray(options).(Array[V])
+		var opt options.ArrayOptions[V]
+		opt.WithSize(size).WithExpandable(extendable)
+		return NewBitArray(opt).(Array[V])
 	}
 	var ba BigFixedArray[V]
 	ba.expand(size)
@@ -115,9 +116,4 @@ func (ba *BigFixedArray[V]) Update(index int, updateFn func(old V) (new V)) {
 
 func (ba *BigFixedArray[V]) Delete(index int) {
 	ba.Set(index, *new(V))
-}
-
-// BigFixedArray does not support UnsafePtr and does not need at all
-func (ba *BigFixedArray[V]) UnsafePtr(index int) *V {
-	return nil
 }

@@ -2,6 +2,7 @@ package basic
 
 import (
 	"github.com/nazarifard/bigtype/internal/hash"
+	"github.com/nazarifard/bigtype/options"
 )
 
 type bigMap[K comparable, V any] struct {
@@ -15,13 +16,13 @@ type bigMap[K comparable, V any] struct {
 }
 
 func NewMap[K comparable, V any](ops ...any) Map[K, V] {
-	options := ParsMapOptions[K, V](ops...)
-	var vo ArrayOptions[V]
-	var ko ArrayOptions[K]
-	var ho ArrayOptions[int]
-	vo.WithSize(options.Size).WithExtandable(true).WithMarshal(options.marshal).WithCloneFn(options.cloneFn)
-	ko.WithSize(options.Size).WithExtandable(true)
-	ho.WithSize(options.Size).WithExtandable(true)
+	opt := ParsMapOptions[K, V](ops...)
+	var vo options.ArrayOptions[V]
+	var ko options.ArrayOptions[K]
+	var ho options.ArrayOptions[int]
+	vo.WithSize(opt.Size()).WithExpandable(true).WithMarshal(opt.Marshal())
+	ko.WithSize(opt.Size()).WithExpandable(true)
+	ho.WithSize(opt.Size()).WithExpandable(true)
 	if isNumber[K]() {
 		return makeTree[K, V](vo)
 	}
@@ -31,7 +32,7 @@ func NewMap[K comparable, V any](ops ...any) Map[K, V] {
 		kHash:          hash.NewHash[K](nil),
 		keys:           NewArray[K](ko),
 		values:         NewArray[V](vo),
-		checkCollition: options.checkCollition,
+		checkCollition: opt.CollisionCheck(),
 	}
 }
 
