@@ -2,14 +2,13 @@ package basic
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
 	"time"
 )
 
 //var _ = func() int { config.Load(); return 0 }()
 
-const g_array_size = 12_000
+const g_array_size = 100_000
 
 func BenchmarkArray_Uint64(b *testing.B) {
 	ba := NewArray[uint64](g_array_size)
@@ -177,20 +176,25 @@ func TestPerformance_BigArray_String(t *testing.T) {
 
 func Test_BigArray_String(t *testing.T) {
 	arr := NewArray[string](g_array_size)
-	for k := range g_array_size {
-		i := rand.Int31n(g_array_size)
+	arr.Set(0, "0000")
+	arr.Set(1, "1111")
+	arr.Set(2, "2222")
+	v := arr.Get(1)
+	v = arr.Get(0)
+	v = arr.Get(2)
+	if v != "2222" {
+		panic("array works wrongly")
+	}
+	for i := range g_array_size {
 		arr.Set(int(i), fmt.Sprint(i)) //fmt.Sprintf("%0.8d", i))
-		//	tree.Set(i, fmt.Sprint(-i))
-		_ = k
 	}
 	for i := 0; i < g_array_size; i++ {
-		i := rand.Int31n(g_array_size)
 		arr.Set(int(i), fmt.Sprint(-i))
 	}
 	for i := 1; i < g_array_size; i++ {
 		j := arr.Get(i) //fmt.Sprintf("%0.8d", i))
 		if j != fmt.Sprint(-i) {
-			//fmt.Println(i, j)
+			fmt.Println(i, j)
 			_ = j
 		}
 	}

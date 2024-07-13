@@ -98,14 +98,14 @@ func Benchmark_MapIntInt_Get(b *testing.B) {
 }
 
 func Benchmark_MapIntString_Set(b *testing.B) {
-	alphabet := []byte("1234567890abcdef")
+	alphabet := []byte("1234567890abcdef1234567890abcdef")
 	repo := NewMap[uint32, []byte](maxSize)
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			i := rand.Int31n(int32(maxSize))
-			le := 1 + rand.Int31n(3)
+			le := 8 + 1 + rand.Int31n(3)
 			repo.Set(uint32(i), alphabet[:le])
 		}
 	})
@@ -255,14 +255,13 @@ func Benchmark_MapStringString_Set(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var n [4]byte
 		for pb.Next() {
-			le := 1 + rand.Int31n(3)
-
+			len := 1 + rand.Int31n(3)
 			p := (*int32)(unsafe.Pointer(&n))
 			*p = rand.Int31n(int32(maxSize))
 			q := unsafe.SliceData(n[:])
 			nStr := unsafe.String(q, 4)
 
-			repo.Set(nStr, alphabet[:le])
+			repo.Set(nStr, alphabet[:len])
 		}
 	})
 }
@@ -277,8 +276,7 @@ func Benchmark_MapStringString_Get(b *testing.B) {
 			*p = rand.Int31n(int32(maxSize))
 			q := unsafe.SliceData(n[:])
 			nStr := unsafe.String(q, 4)
-			v, ok := repo.Get(nStr)
-			_, _ = v, ok
+			repo.Get(nStr)
 		}
 	})
 }

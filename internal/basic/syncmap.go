@@ -5,13 +5,13 @@ import (
 )
 
 type SyncMap[K comparable, V any] struct {
-	m     *bigMap[K, V]
+	m     Map[K, V]
 	mutex *sync.RWMutex
 }
 
 func NewSyncMap[K comparable, V any](ops ...any) *SyncMap[K, V] {
 	m := SyncMap[K, V]{
-		m:     NewMap[K, V](ops...).(*bigMap[K, V]),
+		m:     NewMap[K, V](ops...), //.(*bigMap1[K, V]),
 		mutex: &sync.RWMutex{},
 	}
 	//m.m.iterator = nil

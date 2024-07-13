@@ -21,7 +21,7 @@ var _ = map[bool]bool{false: false, addr.BucketSize == BucketSize: true}
 type BucketHeader1 struct {
 	id        int //3 byte
 	deadSpace uint16
-	FreeCell  Cell1
+	FreeCell  CellPtr
 	Len       int
 }
 
@@ -32,20 +32,20 @@ type Bucket1 struct { //type Bucket1 [BucketSize]byte
 
 //var tmpBucket = Bucket1{}
 
-func (b *Bucket1) MakeCell(offset, Len uint16) (c Cell1, ok bool) {
+func (b *Bucket1) MakeCell(offset, Len uint16) (c CellPtr, ok bool) {
 	if offset == NILOFFSET ||
 		offset >= MaxValidOffset ||
 		int(offset)+int(Len)+HEAD_SIZE > BucketSize {
 		fmt.Println("offset", offset, "len", Len)
 		return c, false
 	}
-	c.Head = (*Head)(unsafe.Pointer(&b.cellar[offset])) //cellar[0] is forbiden
-	offset += uint16(unsafe.Sizeof(*c.Head))
+	c.headPtr = uintptr(unsafe.Pointer(&b.cellar[offset])) //cellar[0] is forbiden
+	offset += uint16(HEAD_SIZE)
 	//last
 	if offset > MaxValidOffset {
-		c.Body = nil
+		c.bodyPtr = 0
 	} else {
-		c.Body = &b.cellar[offset]
+		c.bodyPtr = uintptr(unsafe.Pointer(&b.cellar[offset]))
 	}
 	//c.Tail = (*Tail)(unsafe.Pointer(&b.cellar[offset+Len]))
 	return c, true
@@ -56,10 +56,10 @@ func (b *Bucket1) Id() int {
 func (b *Bucket1) Reset() {
 	b.BucketHeader1 = BucketHeader1{}
 	b.FreeCell, _ = b.MakeCell(1, uint16(len(b.cellar)-1-HEAD_SIZE))
-	b.FreeCell.Status = Dead
-	b.FreeCell.SetIndex(FreeCellIndex)
-	b.FreeCell.Head.Len = uint16(len(b.cellar) - 1)
-	//b.FreeCell.Tail.Tlen = b.FreeCell.Head.Len
+	Header(b.FreeCell.headPtr).Status = Dead
+	Header(b.FreeCell.headPtr).SetIndex(FreeCellIndex)
+	Header(b.FreeCell.headPtr).Len = uint16(len(b.cellar) - 1)
+	//b.FreeCell.Tail.Tlen = Header(b.FreeCell.headPtr).Len
 }
 
 func NewBucket1(id int) *Bucket1 {
@@ -85,7 +85,7 @@ func NewBucket1(id int) *Bucket1 {
 //	}
 func (b *Bucket1) Request(index int, Len int) (space []byte, offset uint16) {
 	freeOffset := b.Offset(b.FreeCell)
-	freeLen := b.FreeCell.Head.Len
+	freeLen := Header(b.FreeCell.headPtr).Len
 
 	if HEAD_SIZE+Len > int(freeLen)-HEAD_SIZE {
 		return nil, NILOFFSET
@@ -97,31 +97,31 @@ func (b *Bucket1) Request(index int, Len int) (space []byte, offset uint16) {
 	//b.FreeCell.Body = &b.cellar[freeOffset+uint16(HEAD_SIZE)] // : freeOffset+8-10+freeLen]
 
 	newCell, _ := b.MakeCell(freeOffset, uint16(Len))
-	newCell.Head.SetIndex(index)
-	newCell.Head.Status = Live
-	space = unsafe.Slice(newCell.Body, Len)
+	Header(newCell.headPtr).SetIndex(index)
+	Header(newCell.headPtr).Status = Live
+	space = unsafe.Slice(Body(newCell.bodyPtr), Len)
 	//copy(bs, data)
-	newCell.Head.Len = uint16(HEAD_SIZE + Len)
-	//newCell.Tail.Tlen = newCell.Head.Len
+	Header(newCell.headPtr).Len = uint16(HEAD_SIZE + Len)
+	//newCell.Tail.Tlen = Header(newCell.headPtr).Len
 	offset = freeOffset //b.Offset(newCell)
 
-	nextOffset := freeOffset + newCell.Head.Len
+	nextOffset := freeOffset + Header(newCell.headPtr).Len
 	var ok bool
-	b.FreeCell, ok = b.MakeCell(nextOffset, freeLen-newCell.Head.Len-uint16(HEAD_SIZE))
+	b.FreeCell, ok = b.MakeCell(nextOffset, freeLen-Header(newCell.headPtr).Len-uint16(HEAD_SIZE))
 	if !ok {
 		fmt.Println("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
 	}
-	b.FreeCell.Head.Status = Dead
-	b.FreeCell.Head.SetIndex(FreeCellIndex)
-	b.FreeCell.Head.Len = freeLen - newCell.Head.Len
-	//b.FreeCell.Tail.Tlen = b.FreeCell.Head.Len
+	Header(b.FreeCell.headPtr).Status = Dead
+	Header(b.FreeCell.headPtr).SetIndex(FreeCellIndex)
+	Header(b.FreeCell.headPtr).Len = freeLen - Header(newCell.headPtr).Len
+	//b.FreeCell.Tail.Tlen = Header(b.FreeCell.headPtr).Len
 
 	return space, offset
 }
 
 // func (b *Bucket1) Write(index int, data []byte) (offset uint16) {
 // 	freeOffset := b.Offset(b.FreeCell)
-// 	freeLen := b.FreeCell.Head.Len
+// 	freeLen := Header(b.FreeCell.headPtr).Len
 // 	if HEAD_SIZE+len(data) > int(freeLen)-HEAD_SIZE {
 // 		return NILOFFSET
 // 	}
@@ -130,23 +130,23 @@ func (b *Bucket1) Request(index int, Len int) (space []byte, offset uint16) {
 // 	}
 // 	//b.FreeCell.Body = &b.cellar[freeOffset+uint16(HEAD_SIZE)] // : freeOffset+8-10+freeLen]
 // 	newCell, _ := b.MakeCell(freeOffset, uint16(len(data)))
-// 	newCell.Head.SetIndex(index)
-// 	newCell.Head.Status = Live
+// 	Header(newCell.headPtr).SetIndex(index)
+// 	Header(newCell.headPtr).Status = Live
 // 	bs := unsafe.Slice(newCell.Body, len(data))
 // 	copy(bs, data)
-// 	newCell.Head.Len = uint16(HEAD_SIZE + len(bs))
-// 	//newCell.Tail.Tlen = newCell.Head.Len
+// 	Header(newCell.headPtr).Len = uint16(HEAD_SIZE + len(bs))
+// 	//newCell.Tail.Tlen = Header(newCell.headPtr).Len
 // 	offset = freeOffset //b.Offset(newCell)
-// 	nextOffset := freeOffset + newCell.Head.Len
+// 	nextOffset := freeOffset + Header(newCell.headPtr).Len
 // 	var ok bool
-// 	b.FreeCell, ok = b.MakeCell(nextOffset, freeLen-newCell.Head.Len-uint16(HEAD_SIZE))
+// 	b.FreeCell, ok = b.MakeCell(nextOffset, freeLen-Header(newCell.headPtr).Len-uint16(HEAD_SIZE))
 // 	if !ok {
 // 		fmt.Println("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
 // 	}
-// 	b.FreeCell.Head.Status = Dead
-// 	b.FreeCell.Head.SetIndex(FreeCellIndex)
-// 	b.FreeCell.Head.Len = freeLen - newCell.Head.Len
-// 	//b.FreeCell.Tail.Tlen = b.FreeCell.Head.Len
+// 	Header(b.FreeCell.headPtr).Status = Dead
+// 	Header(b.FreeCell.headPtr).SetIndex(FreeCellIndex)
+// 	Header(b.FreeCell.headPtr).Len = freeLen - Header(newCell.headPtr).Len
+// 	//b.FreeCell.Tail.Tlen = Header(b.FreeCell.headPtr).Len
 // 	return offset
 // }
 
@@ -158,9 +158,9 @@ func (b *Bucket1) Get(offset uint16) (data []byte) {
 	Len := *(*uint16)(unsafe.Pointer(&b.cellar[offset]))
 	cell, ok := b.MakeCell(offset, Len-uint16(HEAD_SIZE))
 	if ok &&
-		//cell.Head.Len == cell.Tail.Tlen &&
-		cell.Head.Status {
-		return unsafe.Slice(cell.Body, cell.Head.Len-uint16(HEAD_SIZE))
+		//Header(cell.headPtr).Len == cell.Tail.Tlen &&
+		Header(cell.headPtr).Status {
+		return unsafe.Slice(Body(cell.bodyPtr), Header(cell.headPtr).Len-uint16(HEAD_SIZE))
 	} else {
 		panic("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
 	}
@@ -178,8 +178,8 @@ func (bucket *Bucket1) IsRequiredToClean() bool {
 	return bucket.deadSpace > BucketSize*5/100 //more than %5 waste should be defregmented
 }
 
-func (b *Bucket1) Offset(p Cell1) (offset uint16) {
-	current := uintptr(unsafe.Pointer(p.Head))
+func (b *Bucket1) Offset(p CellPtr) (offset uint16) {
+	current := p.headPtr
 	start := uintptr(unsafe.Pointer(&(b.cellar[0])))
 	distance := int(current - start)
 	if distance < 0 || distance > len(b.cellar) { //for debug purpose
@@ -196,12 +196,12 @@ func (b *Bucket1) CheckUp(ad addr.AddressTable) error {
 		if !ok {
 			return fmt.Errorf("checkup bucketId:%d failed. MakeCell return false", b.id)
 		} else if offset == int(b.Offset(b.FreeCell)) {
-			if cell.Head != b.FreeCell.Head {
+			if cell.headPtr != b.FreeCell.headPtr {
 				return fmt.Errorf("checkup bucketId:%d failed. FreeCell is incorrect", b.id)
 			}
-		} else if cell.Status && ad.Get(cell.Index()) != addr.NewAddrItem(uint32(b.id), uint16(offset)) {
-			msg := fmt.Sprintf("checkup bucketId:%d failed. Index:%d at Offset:%d", b.id, cell.Index(), offset)
-			msg += fmt.Sprintf("is not matched with addressTable.Offset:%d", ad.Get(cell.Index()))
+		} else if Header(cell.headPtr).Status && ad.Get(Header(cell.headPtr).Index()) != addr.NewAddrItem(uint32(b.id), uint16(offset)) {
+			msg := fmt.Sprintf("checkup bucketId:%d failed. Index:%d at Offset:%d", b.id, Header(cell.headPtr).Index(), offset)
+			msg += fmt.Sprintf("is not matched with addressTable.Offset:%d", ad.Get(Header(cell.headPtr).Index()))
 			return fmt.Errorf(msg)
 		}
 	}
@@ -214,51 +214,51 @@ func (b *Bucket1) CheckUp(ad addr.AddressTable) error {
 func (b *Bucket1) Delete(offset uint16) {
 	Len := *(*uint16)(unsafe.Pointer(&b.cellar[offset]))
 	cell, ok := b.MakeCell(offset, Len-uint16(HEAD_SIZE))
-	if !ok { // || cell.Head.Len != cell.Tail.Tlen {
+	if !ok { // || Header(cell.headPtr).Len != cell.Tail.Tlen {
 		panic("courrepted cell data")
 	}
 
-	cell.Head.Status = Dead
+	Header(cell.headPtr).Status = Dead
 	b.deadSpace += Len
 	//return
 	//mainOffset := offset
 
-	freeLen := b.FreeCell.Head.Len
+	freeLen := Header(b.FreeCell.headPtr).Len
 	// if freeLen != b.FreeCell.Tail.Tlen {
 	// 	panic("freCell is invalid")
 	// }
 
-	for next, ok := b.Next(cell); ok && !next.Status; next, ok = b.Next(cell) {
+	for next, ok := b.Next(cell); ok && !Header(next.headPtr).Status; next, ok = b.Next(cell) {
 		cell.MergeNext(next)
 	}
 	// for prev, ok := b.Prev(cell); ok && !prev.Status; prev, ok = b.Prev(cell) {
 	// 	prev.MergeNext(cell)
 	// 	cell = prev
 	// }
-	if cell.Head.Len > freeLen {
+	if Header(cell.headPtr).Len > freeLen {
 		b.SetFreeCell(cell)
 	}
-	//cell.Tail.Len = cell.Head.Len
+	//cell.Tail.Len = Header(cell.headPtr).Len
 }
 
-func (b *Bucket1) SetFreeCell(cell Cell1) {
+func (b *Bucket1) SetFreeCell(cell CellPtr) {
 	freeOffset := b.Offset(b.FreeCell)
-	freeLen := b.FreeCell.Head.Len
-	b.FreeCell.Head = cell.Head
+	freeLen := Header(b.FreeCell.headPtr).Len
+	b.FreeCell.headPtr = cell.headPtr
 	//b.FreeCell.Tail = cell.Tail
-	// if b.FreeCell.Tail.Tlen != b.FreeCell.Head.Len {
+	// if b.FreeCell.Tail.Tlen != Header(b.FreeCell.headPtr).Len {
 	// 	panic("cell is invalid")
 	// }
-	b.deadSpace -= cell.Head.Len - freeLen
+	b.deadSpace -= Header(cell.headPtr).Len - freeLen
 
 	offset := b.Offset(cell)
-	if freeOffset < offset || int(freeOffset) > int(offset)+int(cell.Head.Len) {
+	if freeOffset < offset || int(freeOffset) > int(offset)+int(Header(cell.headPtr).Len) {
 		b.deadSpace += freeLen
 	}
 }
 
-func (b *Bucket1) Next(cell Cell1) (next Cell1, ok bool) {
-	nextOffset := b.Offset(cell) + cell.Head.Len //cell.Sizeof()
+func (b *Bucket1) Next(cell CellPtr) (next CellPtr, ok bool) {
+	nextOffset := b.Offset(cell) + Header(cell.headPtr).Len //cell.Sizeof()
 	if nextOffset > uint16(len(b.cellar)-HEAD_SIZE) {
 		return next, false
 	}
@@ -270,7 +270,7 @@ func (b *Bucket1) Next(cell Cell1) (next Cell1, ok bool) {
 	return
 }
 
-// func (b *Bucket1) Prev(cell Cell1) (prev Cell1, ok bool) {
+// func (b *Bucket1) Prev(cell CellPtr) (prev CellPtr, ok bool) {
 // 	offset := b.Offset(cell)
 // 	if offset < 1+10 {
 // 		return prev, false
@@ -284,7 +284,7 @@ func (b *Bucket1) Next(cell Cell1) (next Cell1, ok bool) {
 // 	return
 // }
 
-func (b *Bucket1) FindMaxDead() (Cell1, bool) {
+func (b *Bucket1) FindMaxDead() (CellPtr, bool) {
 	var Len, Max, maxOffset uint16
 	var offset int
 	for offset = 1; offset <= len(b.cellar)-HEAD_SIZE; offset = offset + int(Len) {
@@ -298,7 +298,7 @@ func (b *Bucket1) FindMaxDead() (Cell1, bool) {
 	if maxOffset > 0 {
 		return b.MakeCell(maxOffset, Max-uint16(HEAD_SIZE))
 	}
-	return Cell1{}, false
+	return CellPtr{}, false
 }
 
 func (b *Bucket1) Bytes() []byte {
@@ -332,20 +332,23 @@ func (b *Bucket1) Defrag(ad *addr.AddressTable) {
 	//tmpBucket.cellar, cellar = cellar, tmpBucket.cellar //swap
 	freeLen := uint16(cap(src) - 1 - len(dst))
 	freeOffset := 1 + len(dst)
-	b.FreeCell.Head = (*Head)(unsafe.Pointer(&b.cellar[freeOffset]))
-	b.FreeCell.Head.Len = freeLen
-	b.FreeCell.Head.Status = Dead
-	b.FreeCell.Head.SetIndex(FreeCellIndex)
-	b.FreeCell.Body = nil
+	b.FreeCell.headPtr = uintptr(unsafe.Pointer(&b.cellar[freeOffset]))
+	Header(b.FreeCell.headPtr).Len = freeLen
+	Header(b.FreeCell.headPtr).Status = Dead
+	Header(b.FreeCell.headPtr).SetIndex(FreeCellIndex)
+	b.FreeCell.bodyPtr = 0
 	if freeOffset+HEAD_SIZE <= MaxValidOffset {
-		b.FreeCell.Body = (*byte)(unsafe.Pointer(&b.cellar[freeOffset+HEAD_SIZE]))
+		b.FreeCell.bodyPtr = uintptr(unsafe.Pointer(&b.cellar[freeOffset+HEAD_SIZE]))
 	}
 	//b.FreeCell.Tail = (*Tail)(unsafe.Pointer(&cellar[cap(cellar)-2]))
 	//b.FreeCell.Tail.Tlen = freeLen
 	b.deadSpace = 0
 
 	if log.VerboseMode {
-		log.Logger.Info(fmt.Sprintf("defrag bucketId %d, Saved Space:%d %d%%", b.id, b.FreeCell.Len, b.FreeCell.Len*100/BucketSize))
+		log.Logger.Info(fmt.Sprintf("defrag bucketId %d, Saved Space:%d %d%%",
+			b.id,
+			Header(b.FreeCell.headPtr).Len,
+			int(Header(b.FreeCell.headPtr).Len)*100/BucketSize))
 	}
 
 	//For Debug purpose

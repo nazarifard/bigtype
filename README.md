@@ -26,16 +26,17 @@ Bigtype provides 3 alternative types instead of built-in Go standard types.
  bigtype/sync package provides thread-safe bigtypes. sync bigtypes implemeted as a scalable concurrent high performance big Go data type without engaging GC. 
 
 # Benchmark
-Golang sync.map and standard map respectively use almost 5x and 10x more memory. 
+Golang sync.map and standard map respectively use almost 8x and 20x more memory. 
 ```bash
 $ MAXSIZE=10_000_000 go test -bench=. -run=^$ -benchtime=30000000x
  goos: linux
  goarch: amd64
  pkg: github.com/nazarifard/bigtype
  cpu: Intel(R) Core(TM) i7-3537U CPU @ 2.00GHz
- Benchmark_MapStringString_Set-4                 30000000    1220.00 ns/op     10  B/op     0 allocs/op
+ Benchmark_MapStringString_Set-4                 30000000    1220.00 ns/op      6  B/op     0 allocs/op
  Benchmark_stdMap_StringString_Set-4             30000000     865.5 ns/op      47  B/op     1 allocs/op
  Benchmark_stdSyncMapStringString_Set-4          30000000    1843.00 ns/op     100 B/op     4 allocs/op
+ 
 ```
 # Memstat
 The report of memstat API shows the diffrence between bigtype and other similar solutions clearly.
@@ -46,6 +47,30 @@ $ MAXSIZE=10_000_000 go test -run=Memstats
  Engine: StdMap          Sys:  649MB, Alloc:  580MB, HeapAlloc:  580MB, NumGC: 1
  Engine: sync.Map        Sys: 1372MB, Alloc: 1453MB, HeapAlloc: 1453MB, NumGC: 2
 ```
+# dgraph-io/cachebench
+BigMap is an alias for bigtype.Map works as fast as fastest cache in the world, while uses zero heap memory allocations and never is engaging with GC! the result of benchmarks shows how Bigtype.Map (and also other underlayers bigtype.Array) work stable and reliable with 0 extra memory allocation.
+
+```sh
+BenchmarkCaches/BigMapZipfWrite-4          2416587       448.6 ns/op     0 B/op    0 allocs/op
+BenchmarkCaches/SyncMapZipfWrite-4         1000000      1106.0 ns/op    63 B/op    4 allocs/op
+BenchmarkCaches/RistrettoZipfWrite-4       1000000      2270.0 ns/op   128 B/op    3 allocs/op
+BenchmarkCaches/GroupCacheZipfWrite-4      2632586       488.2 ns/op    47 B/op    2 allocs/op
+                                                                                
+BenchmarkCaches/BigMapOneKeyWrite-4        2918360       403.8 ns/op     0 B/op    0 allocs/op
+BenchmarkCaches/SyncMapOneKeyWrite-4       2852132       422.9 ns/op    61 B/op    4 allocs/op
+BenchmarkCaches/RistrettoOneKeyWrite-4     2994553       370.1 ns/op   128 B/op    3 allocs/op
+BenchmarkCaches/GroupCacheOneKeyWrite-4    3638934       347.1 ns/op    45 B/op    3 allocs/op
+
+BenchmarkCaches/BigMapOneKeyRead-4        10695729       113.9 ns/op     0 B/op    0 allocs/op
+BenchmarkCaches/SyncMapOneKeyRead-4       33431958        31.6 ns/op     0 B/op    0 allocs/op
+BenchmarkCaches/RistrettoOneKeyRead-4     12718990       345.0 ns/op    24 B/op    1 allocs/op
+BenchmarkCaches/GroupCacheOneKeyRead-4     7333424       173.1 ns/op     0 B/op    0 allocs/op
+
+BenchmarkCaches/BigMapZipfRead-4           3178783       369.3 ns/op     0 B/op    0 allocs/op
+BenchmarkCaches/SyncMapZipfRead-4          6624446       154.2 ns/op     0 B/op    0 allocs/op
+BenchmarkCaches/RistrettoZipfRead-4       12708687        94.2 ns/op    24 B/op    1 allocs/op
+BenchmarkCaches/GroupCacheZipfRead-4       6086665       197.3 ns/op     0 B/op    0 allocs/op
+```
 
 # Internal modules 
 Bigtype uses [fastape](github.com/nazarifard/fastape) and [marshaltap](github.com/nazarifard/marshaltap) as fastest marshaling solution and [syncpool](github.com/nazarifard/syncpool) for managing temporary ojects. as well as is using T1HA0 algorithm for hashing and encoding binary data.
@@ -53,9 +78,3 @@ Bigtype uses [fastape](github.com/nazarifard/fastape) and [marshaltap](github.co
 
 # Applications
 bigtype can be used widely in various application that need to load, handle and process a lot of data. including in-memory DBs, Cache solutions, Data migration tools, et cetera.
-
-
-
-
-
-  

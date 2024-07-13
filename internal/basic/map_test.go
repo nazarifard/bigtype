@@ -3,7 +3,6 @@ package basic
 import (
 	"fmt"
 	"math/rand"
-	"os"
 	"testing"
 	"time"
 	"unsafe"
@@ -39,7 +38,14 @@ func TestBigMap(t *testing.T) {
 	start := time.Now()
 	for range uint64(SIZE) {
 		i := rand.Uint64() % SIZE
-		bigmap.Set(fmt.Sprint(i), fmt.Sprint(i))
+		k := fmt.Sprint(i)
+		bigmap.Set(k, k)
+		v, ok := bigmap.Get(k)
+		if !ok || v != k {
+			//bigmap.Set(k, k)
+			//v, ok = bigmap.Get(k)
+			panic("bigmap works wrongly")
+		}
 	}
 	fmt.Printf("\n insert time: %v", time.Since(start))
 
@@ -49,7 +55,10 @@ func TestBigMap(t *testing.T) {
 		bigmap.Set(fmt.Sprint(i), fmt.Sprint(i)+"1")
 	}
 	fmt.Printf("\n update time: %v", time.Since(start))
-
+	i := 12345
+	bigmap.Set(fmt.Sprint(i), fmt.Sprint(i)+"1")
+	v, ok := bigmap.Get(fmt.Sprint(i))
+	_, _ = v, ok
 	start = time.Now()
 	for range uint64(SIZE) {
 		i := rand.Uint64() % SIZE
@@ -57,9 +66,9 @@ func TestBigMap(t *testing.T) {
 		v, ok := bigmap.Get(k)
 		// _, _ = j, ok
 		// fmt.Println(i, j, ok)
-		if ok && k != v && k != v+"1" {
+		if ok && k != v && v != k+"1" {
 			t.Errorf("i!=-j %v!=%v", k, v)
-			os.Exit(1)
+			//os.Exit(1)
 		}
 	}
 	fmt.Printf("\n search time: %v", time.Since(start))
@@ -91,7 +100,7 @@ func TestBigMapUint64(t *testing.T) {
 		//fmt.Println(i, j, ok)
 		if !ok || j != i+1 {
 			t.Errorf("i!=-j %v!=%v", i, j)
-			os.Exit(1)
+			//os.Exit(1)
 		}
 	}
 	fmt.Printf("\n search time: %v", time.Since(start))

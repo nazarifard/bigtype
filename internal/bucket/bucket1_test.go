@@ -165,6 +165,15 @@ func Test_Bucket1(t *testing.T) {
 		addrTable.Set(index, addr.NewAddrItem(0, offset))
 		copy(space, []byte(fmt.Sprint(index))) //write
 	}
+
+	for index = range 5000 {
+		ad := addrTable.Get(index)
+		data := b.Get(ad.Offset())
+		if string(data) != fmt.Sprint(index) {
+			panic("set and get don't match")
+		}
+	}
+
 	if err := b.CheckUp(addrTable); err != nil {
 		panic(err)
 	}

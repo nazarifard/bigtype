@@ -35,18 +35,23 @@ func (h *Head) SetIndex(n int) {
 	h.index[4] = byte(n >> 32)
 }
 
-type Tail struct {
-	Tlen uint16 //always must be equal with Header.Len
+// type Tail struct {
+// 	Tlen uint16 //always must be equal with Header.Len
+// }
+
+type CellPtr struct {
+	headPtr uintptr //*Head
+	bodyPtr uintptr //*byte
 }
 
-type Cell1 struct {
-	*Head
-	Body *byte
-}
-type Cell2 struct {
-	Cell1
-	*Tail
-}
+//	type Cell1 struct {
+//		Head uintptr //*Head
+//		Body uintptr //*byte
+//	}
+// type Cell2 struct {
+// 	CellPtr
+// 	*Tail
+// }
 
 // func (c Cell2) Sizeof() uint16 {
 // 	x := uint16(unsafe.Sizeof(*c.Head))
@@ -55,14 +60,22 @@ type Cell2 struct {
 // 	return x + y + z
 // }
 
-func (c *Cell2) MergeNext(next Cell2) {
-	c.Cell1.MergeNext(next.Cell1)
-	c.Tail = next.Tail
-	c.Tail.Tlen = c.Head.Len
+// func (c *Cell2) MergeNext(next Cell2) {
+// 	c.CellPtr.MergeNext(next.CellPtr)
+// 	c.Tail = next.Tail
+// 	c.Tail.Tlen = c.headPtr.Len
+// 	//dont touch other fields
+// }
+
+func (c *CellPtr) MergeNext(next CellPtr) {
+	Header(c.headPtr).Len += Header(next.headPtr).Len
 	//dont touch other fields
 }
 
-func (c *Cell1) MergeNext(next Cell1) {
-	c.Head.Len += next.Head.Len
-	//dont touch other fields
+func Header(h uintptr) *Head {
+	return (*Head)(unsafe.Pointer(h))
+}
+
+func Body(b uintptr) *byte {
+	return (*byte)(unsafe.Pointer(b))
 }

@@ -27,7 +27,7 @@ func NewMap[K comparable, V any](ops ...any) Map[K, V] {
 	mo := basic.ParsMapOptions[K, V](ops...)
 	if isNumber[K]() {
 		var to options.TreeOptions[K, V]
-		to.WithMarshal(mo.Marshal()).WithSize(mo.Size())
+		to.WithMarshal(mo.VTape()).WithSize(mo.Size())
 		return makeTree[K, V](to)
 	}
 	var newOps []any

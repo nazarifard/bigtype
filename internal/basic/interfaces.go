@@ -20,6 +20,10 @@ type Map[K comparable, V any] interface {
 	SetMany(items map[K]V)
 	Range(f func(Key K, Value V) bool)
 	Delete(key K)
+
+	HSet(hash uint64, key K, value V)
+	HGet(hash uint64, key K) (value V, ok bool)
+	HUpdate(hash uint64, key K, updateFn func(old V) (new V))
 }
 
 //type tree[K kNumber, V any] Map[K, V]

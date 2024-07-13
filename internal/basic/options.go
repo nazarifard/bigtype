@@ -39,39 +39,32 @@ func ParsTreeOptions[K kNumber, V any](ops ...any) (to options.TreeOptions[K, V]
 }
 
 func ParsMapOptions[K comparable, V any](ops ...any) (mo options.MapOptions[K, V]) {
-	var v V
-	if !IsRequiredToMarshal(v) {
-		switch len(ops) {
-		case 0:
-			return mo
-		case 1:
-			size, ok := ops[0].(int)
-			if ok {
-				mo.WithSize(size)
-				return mo
-			}
-
-			mo, ok := ops[0].(options.MapOptions[K, V])
-			if ok {
-				mo.WithMarshal(nil)
-				return mo
-			}
-			if mo, ok := ops[0].(*options.MapOptions[K, V]); ok {
-				mo.WithMarshal(nil)
-				return *mo
-			}
-		}
-	} else if len(ops) == 1 {
-		if mo, ok := ops[0].(options.MapOptions[K, V]); ok {
-			if mo.Marshal() != nil {
-				return mo
-			}
-		}
-		if mo, ok := ops[0].(*options.MapOptions[K, V]); ok {
-			if mo.Marshal() != nil {
-				return *mo
+	switch len(ops) {
+	case 0:
+	case 1:
+		if size, ok := ops[0].(int); ok {
+			mo.WithSize(size)
+		} else {
+			var ok bool
+			if mo, ok = ops[0].(options.MapOptions[K, V]); !ok {
+				if pmo, ok := ops[0].(*options.MapOptions[K, V]); ok {
+					mo = *pmo
+				}
 			}
 		}
 	}
-	panic(errors.New("invalid map options"))
+
+	if IsRequiredToMarshal(*new(V)) {
+		if mo.VTape() == nil {
+			panic(errors.New("invalid map options. VTape is missed"))
+		}
+	}
+
+	if IsRequiredToMarshal(*new(K)) {
+		if mo.KTape() == nil {
+			panic(errors.New("invalid map options. KTape is missed"))
+		}
+	}
+
+	return
 }

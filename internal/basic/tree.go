@@ -150,3 +150,8 @@ func (t *bigTree[K, V]) Delete(key K) {
 	t.values.Delete(int(index))
 	t.keys.Delete(int(index))
 }
+
+// TODO not implemented yet
+func (t *bigTree[K, V]) HSet(hash uint64, key K, value V)                         {}
+func (t *bigTree[K, V]) HGet(hash uint64, key K) (value V, ok bool)               { return }
+func (t *bigTree[K, V]) HUpdate(hash uint64, key K, updateFn func(old V) (new V)) {}
