@@ -2,7 +2,6 @@ package basic
 
 import (
 	"fmt"
-	"iter"
 	"math/rand"
 
 	"github.com/nazarifard/bigtype/internal/addr"
@@ -230,12 +229,10 @@ func NewBytesArray(size int, extandable bool) *BytesArray { //Array[[]byte] {
 	return &ba
 }
 
-func (ba *BytesArray) All() iter.Seq[[]byte] {
-	return func(yield func([]byte) bool) {
-		for i := range ba.Len() {
-			if !yield(ba.UnsafePtr(i)) {
-				break
-			}
+func (ba *BytesArray) Seq(yield func([]byte) bool) {
+	for i := range ba.Len() {
+		if !yield(ba.UnsafePtr(i)) {
+			break
 		}
 	}
 }

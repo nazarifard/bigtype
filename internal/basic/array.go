@@ -2,7 +2,6 @@ package basic
 
 import (
 	"errors"
-	"iter"
 
 	"github.com/nazarifard/fastape"
 )
@@ -64,12 +63,10 @@ func NewArray[V any](ops ...any) Array[V] {
 	}
 }
 
-func (ba *array[V]) All() iter.Seq[V] {
-	return func(yield func(V) bool) {
-		for i := 0; i < ba.Len(); i++ {
-			if !yield(ba.Get(i)) {
-				break
-			}
+func (ba *array[V]) Seq(yield func(V) bool) {
+	for i := 0; i < ba.Len(); i++ {
+		if !yield(ba.Get(i)) {
+			break
 		}
 	}
 }

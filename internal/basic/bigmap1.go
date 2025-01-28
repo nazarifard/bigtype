@@ -1,8 +1,6 @@
 package basic
 
 import (
-	"iter"
-
 	"github.com/nazarifard/bigtype/internal/hash"
 )
 
@@ -106,7 +104,7 @@ func (m *bigMap1[K, V]) SetMany(items map[K]V) {
 	}
 }
 
-func (m *bigMap1[K, V]) Range(f func(key K, value V) bool) {
+func (m *bigMap1[K, V]) Seq(f func(key K, value V) bool) {
 	next := true
 	for i := 0; next && i < m.htree.Len(); i++ {
 		next = f(m.keys.Get(i), m.values.Get(i))
@@ -126,11 +124,5 @@ func (m *bigMap1[K, V]) Delete(key K) {
 	if ok {
 		m.keys.Delete(index)
 		m.values.Delete(index)
-	}
-}
-
-func (m *bigMap1[K, V]) All() iter.Seq2[K, V] {
-	return func(yield func(K, V) bool) {
-		m.Range(yield)
 	}
 }

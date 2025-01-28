@@ -2,7 +2,6 @@ package basic
 
 import (
 	"fmt"
-	"iter"
 	"reflect"
 	"unsafe"
 
@@ -119,12 +118,10 @@ func (ba *BigFixedArray[V]) Delete(index int) {
 	ba.Set(index, *new(V))
 }
 
-func (ba *BigFixedArray[V]) All() iter.Seq[V] {
-	return func(yield func(V) bool) {
-		for i := 0; i < ba.Len(); i++ {
-			if !yield(ba.Get(i)) {
-				break
-			}
+func (ba *BigFixedArray[V]) Seq(yield func(V) bool) {
+	for i := 0; i < ba.Len(); i++ {
+		if !yield(ba.Get(i)) {
+			break
 		}
 	}
 }

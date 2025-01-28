@@ -113,7 +113,7 @@ func (m *bigMap2[K, V]) SetMany(items map[K]V) {
 	}
 }
 
-func (m *bigMap2[K, V]) Range(f func(K, V) bool) {
+func (m *bigMap2[K, V]) Seq(f func(K, V) bool) {
 	next := true
 	for i := 0; next && i < m.htree.Len(); i++ {
 		item := m.kv.Get(i)

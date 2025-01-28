@@ -16,11 +16,10 @@ Bigtype provides 3 alternative types instead of built-in Go standard types.
      m:=bigtype.NewMap[int, string]()
      m.set(123, "123")
      m.set(456, "456")
-     m.Range(func(key, value int) bool {
-            print("{", key, ":", value, "}, ");
-            return true
-          })
-    }
+     for key, value:= range m.Seq{
+     print("{", key, ":", value, "}, ");
+     }
+   }
 ```
 # bigtype/sync
  bigtype/sync package provides thread-safe bigtypes. sync bigtypes implemeted as a scalable concurrent high performance big Go data type without engaging GC. 

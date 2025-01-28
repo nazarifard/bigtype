@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"iter"
 	"sync"
 
 	"github.com/nazarifard/bigtype/internal/basic"
@@ -63,7 +62,7 @@ func (t *bigTree[K, V]) Len() int {
 // but one writer should collect all subtrees data from multi channel
 // then push items to new channel
 // read from multiple channel.......but push to single channel
-func (t *bigTree[K, V]) Range(f func(Key K, Value V) bool) {
+func (t *bigTree[K, V]) Seq(f func(Key K, Value V) bool) {
 	var ch *chan treeIterItem[K, V]
 	t.mutexCh.RLock()
 	ch = t.Chan
@@ -79,7 +78,7 @@ func (t *bigTree[K, V]) Range(f func(Key K, Value V) bool) {
 					t.mutexCh.Unlock()
 				}()
 				for i := range t.subTrees {
-					t.subTrees[i].Range(func(key K, value V) bool {
+					t.subTrees[i].Seq(func(key K, value V) bool {
 						ch <- treeIterItem[K, V]{k: key, v: value, ok: true}
 						return true
 					})
@@ -95,12 +94,6 @@ func (t *bigTree[K, V]) Range(f func(Key K, Value V) bool) {
 		if !f(item.k, item.v) {
 			break
 		}
-	}
-}
-
-func (t *bigTree[K, V]) All() iter.Seq2[K, V] {
-	return func(yield func(K, V) bool) {
-		t.Range(yield)
 	}
 }
 

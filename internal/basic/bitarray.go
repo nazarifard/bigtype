@@ -2,7 +2,6 @@ package basic
 
 import (
 	"fmt"
-	"iter"
 
 	"github.com/nazarifard/bigtype/internal/bucket"
 	"github.com/nazarifard/bigtype/log"
@@ -86,12 +85,10 @@ func (ba *BitArray) Delete(index int) {
 	ba.Set(index, false)
 }
 
-func (ba *BitArray) All() iter.Seq[bool] {
-	return func(yield func(bool) bool) {
-		for i := 0; i < ba.Len(); i++ {
-			if !yield(ba.Get(i)) {
-				break
-			}
+func (ba *BitArray) Seq(yield func(bool) bool) {
+	for i := 0; i < ba.Len(); i++ {
+		if !yield(ba.Get(i)) {
+			break
 		}
 	}
 }

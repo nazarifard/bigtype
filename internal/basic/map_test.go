@@ -114,7 +114,7 @@ func TestMapPrint(t *testing.T) {
 	m.Set("002", 2)
 	m.Set("003", 3)
 	m.Set("002", -2)
-	m.Range(func(key string, value int) bool {
+	m.Seq(func(key string, value int) bool {
 		fmt.Println("key:", key, "value:", value, ", ")
 		return true
 	})

@@ -2,7 +2,6 @@ package basic
 
 import (
 	"fmt"
-	"iter"
 	"os"
 	"reflect"
 
@@ -136,7 +135,7 @@ func (t *bigTree[K, V]) inOrder(root uint32) {
 	}
 }
 
-func (t *bigTree[K, V]) Range(f func(key K, value V) bool) {
+func (t *bigTree[K, V]) Seq(f func(key K, value V) bool) {
 	next := true
 	for i := 1; i < int(t.free) && next; i++ {
 		value := t.values.Get(i)
@@ -156,9 +155,3 @@ func (t *bigTree[K, V]) Delete(key K) {
 func (t *bigTree[K, V]) HSet(hash uint64, key K, value V)                         {}
 func (t *bigTree[K, V]) HGet(hash uint64, key K) (value V, ok bool)               { return }
 func (t *bigTree[K, V]) HUpdate(hash uint64, key K, updateFn func(old V) (new V)) {}
-
-func (t *bigTree[K, V]) All() iter.Seq2[K, V] {
-	return func(yield func(K, V) bool) {
-		t.Range(yield)
-	}
-}

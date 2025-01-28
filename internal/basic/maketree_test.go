@@ -13,7 +13,7 @@ func TestMakeTree(t *testing.T) {
 	m.Set(2, "2000")
 	m.Set(3, "3000")
 	m.Set(4, "4000")
-	m.Range(func(key int, value string) bool {
+	m.Seq(func(key int, value string) bool {
 		fmt.Println(key, value)
 		return true
 	})
@@ -28,7 +28,7 @@ func TestMakeMap(t *testing.T) {
 	m.Set("2", "2000")
 	m.Set("3", "3000")
 	m.Set("4", "4000")
-	m.Range(func(key, value string) bool {
+	m.Seq(func(key, value string) bool {
 		fmt.Println(key, value)
 		return true
 	})

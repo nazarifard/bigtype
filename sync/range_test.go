@@ -12,10 +12,9 @@ func TestMapRangeInt(t *testing.T) {
 	}
 	done := make(chan struct{})
 	f := func(id int) {
-		m.Range(func(key, value int) bool {
+		for key, value := range m.Seq {
 			fmt.Println(id, key, value)
-			return true
-		})
+		}
 		done <- struct{}{}
 	}
 	go f(10)
@@ -31,10 +30,9 @@ func TestMapRangeString(t *testing.T) {
 	}
 	done := make(chan struct{})
 	f := func(id int) {
-		m.Range(func(key, value string) bool {
+		for key, value := range m.Seq {
 			fmt.Println(id, key, value)
-			return true
-		})
+		}
 		done <- struct{}{}
 	}
 	go f(10)

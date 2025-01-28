@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"iter"
 	"sync"
 
 	"github.com/nazarifard/bigtype/internal/basic"
@@ -82,7 +81,7 @@ func (m *bigMap[K, V]) Len() int {
 // but one writer should collect all subtrees data from multi channel
 // then push items to new channel
 // read from multiple channel.......but push to single channel
-func (m *bigMap[K, V]) Range(f func(Key K, Value V) bool) {
+func (m *bigMap[K, V]) Seq(f func(Key K, Value V) bool) {
 	var ch *chan mapIterItem[K, V]
 	m.mutexCh.RLock()
 	ch = m.Chan
@@ -98,7 +97,7 @@ func (m *bigMap[K, V]) Range(f func(Key K, Value V) bool) {
 					m.mutexCh.Unlock()
 				}()
 				for i := range m.subMaps {
-					m.subMaps[i].Range(func(key K, value V) bool {
+					m.subMaps[i].Seq(func(key K, value V) bool {
 						ch <- mapIterItem[K, V]{k: key, v: value, ok: true}
 						return true
 					})
@@ -120,10 +119,4 @@ func (m *bigMap[K, V]) Range(f func(Key K, Value V) bool) {
 func (m *bigMap[K, V]) Delete(key K) {
 	hash := m.kHash.Hash(key)
 	m.subMaps[hash%nSubMaps].Delete(key)
-}
-
-func (m *bigMap[K, V]) All() iter.Seq2[K, V] {
-	return func(yield func(K, V) bool) {
-		m.Range(yield)
-	}
 }

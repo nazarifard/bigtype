@@ -202,7 +202,7 @@ func (b *Bucket1) CheckUp(ad addr.AddressTable) error {
 		} else if Header(cell.headPtr).Status && ad.Get(Header(cell.headPtr).Index()) != addr.NewAddrItem(uint32(b.id), uint16(offset)) {
 			msg := fmt.Sprintf("checkup bucketId:%d failed. Index:%d at Offset:%d", b.id, Header(cell.headPtr).Index(), offset)
 			msg += fmt.Sprintf("is not matched with addressTable.Offset:%d", ad.Get(Header(cell.headPtr).Index()))
-			return fmt.Errorf(msg)
+			return fmt.Errorf("%s", msg)
 		}
 	}
 	if offset != cap(b.cellar) {

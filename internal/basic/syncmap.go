@@ -60,9 +60,9 @@ func (m *SyncMap[K, V]) Get(key K) (value V, ok bool) {
 	return m.m.Get(key)
 }
 
-func (m *SyncMap[K, V]) Range(f func(Key K, Value V) bool) {
+func (m *SyncMap[K, V]) Seq(f func(Key K, Value V) bool) {
 	m.mutex.RLock()
-	m.m.Range(f)
+	m.m.Seq(f)
 	m.mutex.RUnlock()
 }
 
