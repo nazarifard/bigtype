@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"iter"
 	"sync"
 
 	"github.com/nazarifard/bigtype/internal/basic"
@@ -95,4 +96,14 @@ func (t *bigTree[K, V]) Range(f func(Key K, Value V) bool) {
 			break
 		}
 	}
+}
+
+func (t *bigTree[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		t.Range(yield)
+	}
+}
+
+func (t *bigTree[K, V]) Delete(key K) {
+	t.subTrees[int(key)%nSubTrees].Delete(key)
 }

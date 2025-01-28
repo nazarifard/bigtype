@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"iter"
 	"sync"
 
 	"github.com/nazarifard/bigtype/internal/basic"
@@ -77,4 +78,14 @@ func (s *syncArray[V]) Get(index int) V {
 	s.mutext.RLock()
 	defer s.mutext.RUnlock()
 	return s.arr.Get(index)
+}
+
+func (a *array[V]) All() iter.Seq[V] {
+	return func(yield func(V) bool) {
+		for i := range a.Len() {
+			if !yield(a.Get(i)) {
+				break
+			}
+		}
+	}
 }

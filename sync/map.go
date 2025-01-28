@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"iter"
 	"sync"
 
 	"github.com/nazarifard/bigtype/internal/basic"
@@ -113,5 +114,16 @@ func (m *bigMap[K, V]) Range(f func(Key K, Value V) bool) {
 		if !f(item.k, item.v) {
 			break
 		}
+	}
+}
+
+func (m *bigMap[K, V]) Delete(key K) {
+	hash := m.kHash.Hash(key)
+	m.subMaps[hash%nSubMaps].Delete(key)
+}
+
+func (m *bigMap[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		m.Range(yield)
 	}
 }

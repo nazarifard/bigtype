@@ -1,6 +1,8 @@
 package basic
 
 import (
+	"iter"
+
 	"github.com/nazarifard/bigtype/internal/hash"
 )
 
@@ -124,5 +126,11 @@ func (m *bigMap1[K, V]) Delete(key K) {
 	if ok {
 		m.keys.Delete(index)
 		m.values.Delete(index)
+	}
+}
+
+func (m *bigMap1[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		m.Range(yield)
 	}
 }

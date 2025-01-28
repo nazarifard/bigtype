@@ -1,5 +1,7 @@
 package basic
 
+import "iter"
+
 type StringArray struct {
 	*BytesArray
 }
@@ -30,5 +32,15 @@ func (ba *StringArray) Update(index int, fn func(string) string) {
 func NewStringArray(size int, expandable bool) *StringArray {
 	return &StringArray{
 		BytesArray: NewBytesArray(size, expandable),
+	}
+}
+
+func (sa *StringArray) All() iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for i := range sa.Len() {
+			if !yield(b2s(sa.UnsafePtr(i))) {
+				break
+			}
+		}
 	}
 }

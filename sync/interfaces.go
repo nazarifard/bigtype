@@ -2,11 +2,14 @@
 
 package sync
 
+import "iter"
+
 type Array[V any] interface {
 	Set(index int, v V)
 	Get(index int) V
 	Len() int
 	Update(index int, updateFn func(old V) (new V))
+	All() iter.Seq[V]
 }
 
 type Updatable[K comparable, V any] interface {
@@ -20,6 +23,8 @@ type Map[K comparable, V any] interface {
 	Get(key K) (value V, ok bool)
 	SetMany(items map[K]V)
 	Range(f func(Key K, Value V) bool)
+	Delete(key K)
+	All() iter.Seq2[K, V]
 }
 
 //type tree[K kNumber, V any] Map[K, V]

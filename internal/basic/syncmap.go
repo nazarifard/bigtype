@@ -71,3 +71,9 @@ func (m *SyncMap[K, V]) SetMany(items map[K]V) {
 	defer m.mutex.Unlock()
 	m.m.SetMany(items)
 }
+
+func (m *SyncMap[K, V]) Delete(key K) {
+	m.mutex.RLock()
+	m.m.Delete(key)
+	m.mutex.RUnlock()
+}

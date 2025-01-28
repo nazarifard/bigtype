@@ -1,6 +1,7 @@
 package basic
 
 import (
+	"iter"
 	"sync"
 )
 
@@ -51,4 +52,16 @@ func (t *SyncTree[K, V]) SetMany(items map[K]V) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 	t.t.SetMany(items)
+}
+
+func (t *SyncTree[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		t.Range(yield)
+	}
+}
+
+func (t *SyncTree[K, V]) Delete(key K) {
+	t.mutex.RLock()
+	defer t.mutex.RUnlock()
+	t.t.Delete(key)
 }

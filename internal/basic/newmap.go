@@ -1,6 +1,8 @@
 package basic
 
 import (
+	"iter"
+
 	"github.com/nazarifard/bigtype/internal/hash"
 	"github.com/nazarifard/bigtype/internal/kv"
 	"github.com/nazarifard/bigtype/internal/utils"
@@ -60,5 +62,11 @@ func NewMap[K comparable, V any](ops ...any) Map[K, V] {
 		checkCollition: opt.CollisionCheck(),
 		tape:           kv.NewTapeKV[K, V](opt.KTape(), opt.VTape()),
 		vTape:          opt.VTape(),
+	}
+}
+
+func (m *bigMap2[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		m.Range(yield)
 	}
 }

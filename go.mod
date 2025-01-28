@@ -1,6 +1,6 @@
 module github.com/nazarifard/bigtype
 
-go 1.22.4
+go 1.23.4
 
 require (
 	github.com/nazarifard/fastape v0.0.0-20240709164519-8c17d21a54a1

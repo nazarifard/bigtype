@@ -179,8 +179,13 @@ func Test_BigArray_String(t *testing.T) {
 	arr.Set(0, "0000")
 	arr.Set(1, "1111")
 	arr.Set(2, "2222")
+
 	v := arr.Get(1)
+	_ = v
+
 	v = arr.Get(0)
+	_ = v
+
 	v = arr.Get(2)
 	if v != "2222" {
 		panic("array works wrongly")
