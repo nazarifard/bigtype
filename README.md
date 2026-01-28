@@ -5,21 +5,27 @@ Bigtype provides 3 alternative types instead of built-in Go standard types.
 
 # Example 
 ```go
-  import "github.com/nazarifard/bigtype"
-   func demo() {
-     //var a bigtype.Array[int]
-     a:=bigtype.NewArray[string](500_000_000) 
-     a.Set(123456789, "-123456789")
-     fmt.Println(a.Get(123456789))
+import "github.com/nazarifard/bigtype"
+import "fmt" 
 
-     //var m bigtype.Map[K,V]
-     m:=bigtype.NewMap[int, string]()
-     m.set(123, "123")
-     m.set(456, "456")
-     for key, value:= range m.Seq{
-     print("{", key, ":", value, "}, ");
-     }
+func demo() error {
+  bigArr:=bigtype.NewArray[string](200_000_000) 
+  for k := range 200_000_000 {
+	  a.set(k, fmt.Sprint(-k))
+  }
+  
+  m:=bigtype.NewMap[int, string]()
+  for k := range 200_000_000 {
+	  m.set(k, fmt.Sprint(k))
+  }
+  
+  for k, v := range m.Seq {
+    if a[k] != "-" + v {
+      return fmt.Errorf("bigType failed");
    }
+  }
+  return nil
+}
 ```
 # bigtype/sync
  bigtype/sync package provides thread-safe bigtypes. sync bigtypes implemeted as a scalable concurrent high performance big Go data type without engaging GC. 
