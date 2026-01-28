@@ -9,7 +9,7 @@ import "github.com/nazarifard/bigtype"
 import "fmt" 
 
 func demo() error {
-  bigArr:=bigtype.NewArray[string](200_000_000) 
+  a := bigtype.NewArray[string](200_000_000) 
   for k := range 200_000_000 {
 	  a.set(k, fmt.Sprint(-k))
   }
